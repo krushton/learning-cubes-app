@@ -7,15 +7,61 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
 public class LessonsActivity extends Activity {
+	
+	private LessonsListAdapter adapter;
+	private final String TAG = "Lesson activity";
+	private ActionMode mActionMode; 
+	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+	    @Override
+	    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+	        // Inflate a menu resource providing context menu items
+	        MenuInflater inflater = mode.getMenuInflater();
+	        inflater.inflate(R.menu.lesson_context_menu, menu);
+	        return true;
+	    }
+
+	    @Override
+	    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+	        return false; // Return false if nothing is done
+	    }
+
+	    // Called when the user selects a contextual menu item
+	    @Override
+	    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+	        switch (item.getItemId()) {
+	            case R.id.action_delete:
+	            	//todo: handle delete of item from 'database'
+	                mode.finish(); // Action picked, so close the CAB
+	                return true;
+	            default:
+	                return false;
+	        }
+	    }
+
+	    // Called when the user exits the action mode
+	    @Override
+	    public void onDestroyActionMode(ActionMode mode) {
+	        mActionMode = null;
+	    }
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,10 +72,45 @@ public class LessonsActivity extends Activity {
 		final ActionBar actionBar = getActionBar();
 		// Show the Up button in the action bar.
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		adapter = new LessonsListAdapter(this, Database.lessons);
 		
-		for (Lesson l : Database.lessons) {
-			addAccordionListItem(l);
-		}
+        
+		ListView lv = (ListView)findViewById(R.id.lessons_list);
+		lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		lv.setAdapter(adapter);
+		lv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
+					long arg3) {
+				int id = (Integer)v.getTag();
+				Intent i = new Intent(LessonsActivity.this, LessonDetailActivity.class);
+				i.putExtra("lessonId", id);
+				startActivity(i);
+				
+			}
+
+      });
+      
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View v,
+					int arg2, long arg3) {
+				Log.d(TAG, "LONG ITEM CLICK");
+				if (mActionMode != null) {
+		            return false;
+		        }				
+		        mActionMode = LessonsActivity.this.startActionMode(mActionModeCallback);
+		        v.setSelected(true);
+				return true;
+			}
+
+		
+	});
+		
+
 	}
 
 	@Override
@@ -46,6 +127,8 @@ public class LessonsActivity extends Activity {
 
 		return true;
 	}
+	
+	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -66,27 +149,38 @@ public class LessonsActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
-	public void addAccordionListItem(Lesson lesson) {
-		
-		RelativeLayout listViewLayout = (RelativeLayout)findViewById(R.id.lessonList);
-		
-		LayoutInflater inflater = getLayoutInflater();
-		RelativeLayout titleBar = (RelativeLayout)inflater.inflate(R.id.lesson_title_bar, listViewLayout);
-		
-		TextView title = (TextView)titleBar.findViewById(R.id.lesson_title_bar_name);
-		title.setText(lesson.lessonName);
-		
-		listViewLayout.addView(titleBar);
-		
-		RelativeLayout details = (RelativeLayout)inflater.inflate(R.id.lesson_details, listViewLayout);
-		TextView name = (TextView)details.findViewById(R.id.lesson_details_name);
-		name.setText(lesson.lessonName);
-		
-		TextView numQuestions = (TextView)details.findViewById(R.id.lesson_details_number_questions);
-		name.setText(lesson.questions.size() + " questions");
-	}
 	
+	private class LessonsListAdapter extends ArrayAdapter<Lesson>{
 
+	    private final Context context;
+	    private final Lesson[] values;
+
+	    public LessonsListAdapter(Context context, Lesson[] lessons) {
+	            
+	    //call the super class constructor and provide the ID of the resource to use instead of the default list view item
+	      super(context, R.layout.blockset_list_item, lessons);
+	      this.context = context;
+	      this.values = lessons;
+	    }
+	    
+	    //this method is called once for each item in the list
+	    @Override
+	    public View getView(int position, View convertView, ViewGroup parent) {
+
+	      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	      View listItem = inflater.inflate(R.layout.lesson_list_item, parent, false);
+	    
+	      listItem.setTag(values[position].id);
+	      TextView lessonName = (TextView)listItem.findViewById(R.id.lesson_name);
+	      lessonName.setText(values[position].lessonName);
+	      
+	      TextView description = (TextView)listItem.findViewById(R.id.lesson_description);
+	      description.setText(values[position].description);
+	      
+
+	      return listItem;
+	    
+	    }
+	}
 
 }

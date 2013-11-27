@@ -16,9 +16,9 @@
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
-    
-    <uses-feature android:name="android.hardware.bluetooth_le"
-        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -118,10 +118,22 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
-           	<meta-data
+            <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
-           	
+        </activity>
+
+        <service
+            android:name="com.cubes.learningcubes.BluetoothLeService"
+            android:enabled="true" />
+
+        <activity
+            android:name="com.cubes.learningcubes.LessonDetailActivity"
+            android:label="@string/title_activity_lesson_detail"
+            android:parentActivityName="com.cubes.learningcubes.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cubes.learningcubes.MainActivity" />
         </activity>
     </application>
 

@@ -46,18 +46,25 @@ public class ScanActivity extends Activity {
 		RelativeLayout scanLayout = (RelativeLayout)findViewById(R.id.nfc_scan_layout);
 		RelativeLayout editLayout = (RelativeLayout)findViewById(R.id.nfc_edit_layout);
 		
+		SharedPreferences.Editor editor = prefs.edit();
 		
 		//hack. this activity gets loaded twice for some reason, need to store the id
 		if (getIntent().getExtras() != null) {
-			mode = getIntent().getExtras().getString("mode", "scan");
-			SharedPreferences.Editor editor = prefs.edit();
+			mode = getIntent().getExtras().getString("mode");
+			Log.d(TAG, " TEST NOISE: " + mode);
 			editor.putString("mode", mode);
 			editor.commit();
 		} else {
-			mode = prefs.getString("mode", "scan");
+			if (prefs.contains("mode")) {
+				mode = prefs.getString("mode", "");
+			} else {
+				mode = "scan";
+			}
+			
 		}
+	
 		
-		if (mode == "details") {
+		if (mode.equals("details")) {
 			setId = getIntent().getExtras().getInt("setId", -1);
 			if (setId == -1) {
 				setId = prefs.getInt("setId", -1);
@@ -67,8 +74,9 @@ public class ScanActivity extends Activity {
 			//todo: make this actually get the set by id
 			setName = Database.blockSets[0].name;
 
-			SharedPreferences.Editor editor = prefs.edit();
+			
 			editor.putInt("setId", setId);
+			editor.putString("mode", "details");
 			editor.commit();
 			
 			editLayout.setVisibility(View.VISIBLE);
@@ -76,6 +84,7 @@ public class ScanActivity extends Activity {
 		} else {
 			scanLayout.setVisibility(View.VISIBLE);
 			editLayout.setVisibility(View.GONE);
+			editor.putString("mode", "scan");
         	getActionBar().setTitle("Quick Scan");
 		}
 		
@@ -117,7 +126,7 @@ public class ScanActivity extends Activity {
                 payload = getTagData(tag);
             }
             
-            if (mode == "scan") {
+            if (mode.equals("scan")) {
             	scanResultTextView.setText(payload);
             } else {
             	TextView currentValueLabel = (TextView)findViewById(R.id.message_current_value);

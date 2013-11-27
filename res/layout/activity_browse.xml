@@ -26,7 +26,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -54,7 +57,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -71,6 +77,8 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
+        
+        
         <LinearLayout
             android:id="@+id/geography"
             android:layout_width="0dp"
@@ -82,7 +90,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -116,7 +127,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -144,7 +158,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -172,7 +189,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -197,19 +217,25 @@
         <LinearLayout
             android:id="@+id/spelling"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginRight="1dp"
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="5dp"
-                android:src="@drawable/ic_spelling" />
+                android:src="@drawable/ic_write" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -218,7 +244,6 @@
                 android:text="Spelling"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
-
         <LinearLayout
             android:id="@+id/math"
             android:layout_width="0dp"
@@ -230,7 +255,10 @@
             android:background="@color/light_gray"
             android:onClick="handleClick"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -257,7 +285,10 @@
             android:layout_marginRight="1dp"
             android:background="@color/light_gray"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -273,6 +304,8 @@
                 android:text="Music"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
+        
+        
     </LinearLayout>
 
 </LinearLayout>

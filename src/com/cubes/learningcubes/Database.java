@@ -19,12 +19,13 @@ public class Database {
 	public static Session[] sessions = { 
 		new Session(new Date(), 2000, 10, 12, "Spelling animals", 1, 123),
 		new Session(new Date(), 1000, 20, 30, "Spelling animals", 1, 124),
-		new Session(new Date(), 2200, 16, 20, "Numbers", 2, 125),
-		new Session(new Date(), 1800, 12, 20, "Numbers", 2, 125),
+		new Session(new Date(), 2200, 16, 20, "Simple addition", 2, 125),
+		new Session(new Date(), 1800, 12, 20, "Simple addition", 2, 125),
 	};
 	
 	public static Lesson[] lessons = { 
-		new Lesson("Spelling animals", 1, null)
+		new Lesson("Spelling animals", "A game for practicing spelling with common animal names", 1, 1, null),
+		new Lesson("Simple addition", "Adding of single digit numbers", 2, 2, null)
 	};
 	
 	static {
@@ -42,6 +43,25 @@ public class Database {
 		questions.put("How do you spell eagle?", "{e}{a}{g}{l}{e}");
 		questions.put("How do you spell antelope?", "{a}{n}{t}{e}{l}{o}{p}{e}");	
 		lessons[0].questions = questions;
+		
+		HashMap<String,String> moreQuestions = new HashMap<String, String>();
+		moreQuestions.put("What is 2 plus 2?", "{4}");
+		moreQuestions.put("What is 6 plus 3?", "{9}");
+		moreQuestions.put("What is 3 plus 1?", "{4}");
+		moreQuestions.put("What is 1 plus 1?", "{2}");
+		moreQuestions.put("What is 5 plus 1?", "{6}");
+		moreQuestions.put("What is 3 plus 2?", "{5}");
+		moreQuestions.put("What is 0 plus 1?", "{1}");
+		moreQuestions.put("What is 1 plus 8?", "{9}");
+		moreQuestions.put("What is 2 plus 4?", "{6}");
+		moreQuestions.put("What is 6 plus 1?", "{7}");
+		moreQuestions.put("What is 3 plus 3?", "{6}");
+		moreQuestions.put("What is 3 plus 6?", "{9}");
+		moreQuestions.put("What is 7 plus 1?", "{8}");
+		moreQuestions.put("What is 4 plus 0?", "{4}");
+		moreQuestions.put("What is 0 plus 0?", "{0}");
+		moreQuestions.put("What is 4 plus 4?", "{8}");
+		lessons[1].questions = moreQuestions;
 		
 		sessionLog = new HashMap<String, Integer>();
 		sessionLog.put("How do you spell cat?", 1);

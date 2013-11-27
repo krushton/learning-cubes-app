@@ -34,5 +34,10 @@
     <string name="search_title">Search</string>
     <string name="search_hint">Search Lessons</string>
     <string name="title_activity_browse">Browse Lessons</string>
-	<string name="action_mylessons">My Lessons</string>
+    <string name="action_mylessons">My Lessons</string>
+    <string name="delete_title">Delete</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="title_activity_lesson_detail">Lesson Detail</string>
+
 </resources>
