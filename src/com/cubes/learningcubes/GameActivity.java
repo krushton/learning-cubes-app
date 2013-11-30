@@ -76,7 +76,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		mHandler = new Handler();
 		setupActionBar();
 		outputLayout = (LinearLayout)findViewById(R.id.output_layout);
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		tts = new TextToSpeech(this, this);
 	}
 	

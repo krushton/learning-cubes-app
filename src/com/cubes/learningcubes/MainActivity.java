@@ -22,12 +22,6 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putInt("setId", -1);
-		editor.commit();
-		
-		
         setListAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems));
         final ListView v = getListView();
         v.setOnItemClickListener(new OnItemClickListener() {

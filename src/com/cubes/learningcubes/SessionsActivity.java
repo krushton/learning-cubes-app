@@ -31,7 +31,7 @@ public class SessionsActivity extends Activity {
 		setContentView(R.layout.activity_sessions);
 		// Show the Up button in the action bar.
 		setupActionBar();
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		ListView lv = (ListView)findViewById(R.id.sessions_list);
 		lv.setAdapter(new SessionsListAdapter(this, convertListToArray(db.getSessions())));
 		lv.setOnItemClickListener(new OnItemClickListener() {

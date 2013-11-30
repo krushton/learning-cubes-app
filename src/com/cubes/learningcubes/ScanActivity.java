@@ -1,12 +1,17 @@
 package com.cubes.learningcubes;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentFilter.MalformedMimeTypeException;
 import android.content.SharedPreferences;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.nfc.tech.MifareClassic;
+import android.nfc.tech.NfcA;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
@@ -24,16 +29,19 @@ import android.widget.Toast;
 
 public class ScanActivity extends Activity {
 	
-	private NfcAdapter mNfcAdapter;
+	private NfcAdapter mAdapter;
 	private TextView scanResultTextView;
 	private final String TAG = "ScanActivity";
 	private String setName = "";
-	private int setId = -1;
+	private long setId = 0;
+	private String mode = "scan";
 	private SharedPreferences prefs;
 	private EditText newValueTextbox;
-	private String mode;
 	private CubesDbHelper db;
 	private long currentBlockId;
+	PendingIntent pendingIntent;
+	private String[][] techListsArray;
+	private IntentFilter[] intentFiltersArray;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,151 +49,61 @@ public class ScanActivity extends Activity {
 		setContentView(R.layout.activity_scan);
 		// Show the Up button in the action bar.
 		setupActionBar();
+		Log.d(TAG, "ON CREATE CALLED");
+		db = CubesDbHelper.getInstance(this);
 		
-		db = new CubesDbHelper(this);
-		prefs = this.getPreferences(Context.MODE_PRIVATE);
-		scanResultTextView = (TextView)findViewById(R.id.result);
-		
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			if (extras.containsKey("mode") && extras.getString("mode").equals("details")) {
+				mode = "details";
+			}
+		} 
 		RelativeLayout scanLayout = (RelativeLayout)findViewById(R.id.nfc_scan_layout);
 		RelativeLayout editLayout = (RelativeLayout)findViewById(R.id.nfc_edit_layout);
 		
-		SharedPreferences.Editor editor = prefs.edit();
-		Bundle extras = getIntent().getExtras();
-		//hack. this activity gets loaded twice for some reason, need to store the id
-		if (extras != null) {
-			if (extras.containsKey("mode")) {
-					mode = getIntent().getExtras().getString("mode");
-			} else {
-					mode = "scan";
-			}
-			editor.putString("mode", mode);
-			editor.commit();
-		} else {
-			if (prefs.contains("mode")) {
-				mode = prefs.getString("mode", "");
-			} else {
-				mode = "scan";
-			}
-			
-		}
-	
-		
-		if (mode != null && mode.equals("details")) {
-			setId = getIntent().getExtras().getInt("setId", -1);
-			if (setId == -1) {
-				setId = prefs.getInt("setId", -1);
-			}
-			getActionBar().setTitle("Edit Block Set");
-			
-			//todo: make this actually get the set by id
-			setName = db.getBlockSetById(setId).name;
-
-			
-			editor.putInt("setId", setId);
-			editor.putString("mode", "details");
-			editor.commit();
-			
+		if (mode.equals("details")) {
+			setId = extras.getLong("setId", 0);
+			setName = extras.getString("setName", "");
 			editLayout.setVisibility(View.VISIBLE);
 			scanLayout.setVisibility(View.GONE);
+			getActionBar().setTitle("Edit Block Set");
+			TextView currentValueLabel = (TextView)findViewById(R.id.message_current_value);
+        	currentValueLabel.setText("Current value in set \"" + setName + "\"");
 		} else {
+			scanResultTextView = (TextView)findViewById(R.id.result);
 			scanLayout.setVisibility(View.VISIBLE);
 			editLayout.setVisibility(View.GONE);
-			editor.putString("mode", "scan");
         	getActionBar().setTitle("Quick Scan");
 		}
 		
-		
-		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-		
-        if (mNfcAdapter == null) {
+		mAdapter = NfcAdapter.getDefaultAdapter(this);		
+        if (mAdapter == null) {
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        if (!mNfcAdapter.isEnabled()) {
-        	scanResultTextView.setText("NFC is disabled.");
+        if (!mAdapter.isEnabled()) {
+        	Toast.makeText(this, "NFC is disabled.", Toast.LENGTH_SHORT).show();
         } 
-        handleIntent(getIntent());
-    }
-	
-	private void handleIntent(Intent intent) {
-		
-	    String action = intent.getAction();
-	    if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
-                || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
-                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-            NdefMessage[] msgs;
-            String payload ="";
-            if (rawMsgs != null) {
-                msgs = new NdefMessage[rawMsgs.length];
-                for (int i = 0; i < rawMsgs.length; i++) {
-                    msgs[i] = (NdefMessage) rawMsgs[i];
-                }
-                
-                for (NdefMessage msg : msgs) {
-                	payload += " " + msg.toString();
-                }
-            } else {
-                // Unknown tag type
-                Parcelable tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                payload = getTagData(tag);
-            }
-            
-            if (mode.equals("scan")) {
-            	scanResultTextView.setText(payload);
-            } else {
-            	TextView currentValueLabel = (TextView)findViewById(R.id.message_current_value);
-            	currentValueLabel.setText("Current value in set \"" + setName + "\"");
-        		
-        		EditText currentValueEditText = (EditText)findViewById(R.id.current_value);
-        		
-        		Block block = db.getBlockByTagValue(payload);
-        		
-        		String currentTagValue = getResources().getString(R.string.unmapped);
-        		if (block != null) {
-        			currentTagValue = block.text;
-        			currentBlockId = block.id;
-        		} 
-        		currentValueEditText.setText(currentTagValue);
-        		
-        		newValueTextbox = (EditText)findViewById(R.id.remap_value);
-        		final Button saveButton = (Button)findViewById(R.id.save_button);
-        		newValueTextbox.addTextChangedListener(new TextWatcher() {
+        setupNFC();
 
-					@Override
-					public void afterTextChanged(Editable edit) {
-						if (edit.toString().isEmpty()) {
-							saveButton.setEnabled(false);
-						} else {
-							saveButton.setEnabled(true);
-						}
-						
-					}
-
-					@Override
-					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-						// TODO Auto-generated method stub	
-					}
-
-					@Override
-					public void onTextChanged(CharSequence s, int start, int before, int count) {
-						// TODO Auto-generated method stub
-						
-					}
-        			
-        		});
-        		SharedPreferences.Editor editor = prefs.edit();
-    			editor.remove("mode");
-    			editor.remove("setId");
-    			editor.commit();
-        		
-            }
-            
-	    }
-	    
 	}
-    
+	
+	private void setupNFC() {
+		IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+		IntentFilter tag = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+	    try {
+	        ndef.addDataType("*/*");   
+	    }
+	    catch (MalformedMimeTypeException e) {
+	        throw new RuntimeException("fail", e);
+	    }
+	    intentFiltersArray = new IntentFilter[] {ndef, tag};
+	    techListsArray = new String[][] { new String[] { MifareClassic.class.getName(), NfcA.class.getName() } };
+		pendingIntent = PendingIntent.getActivity(
+			    this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		
+	}
 
 	/**
 	 * Set up the {@link android.app.ActionBar}.
@@ -200,7 +118,71 @@ public class ScanActivity extends Activity {
 		getMenuInflater().inflate(R.menu.scan, menu);
 		return true;
 	}
+	
+	@Override
+	public void onPause() {
+	    super.onPause();
+	    mAdapter.disableForegroundDispatch(this);
+	}   
 
+	@Override
+	public void onResume() {
+	    super.onResume();
+	    mAdapter.enableForegroundDispatch(this, pendingIntent, intentFiltersArray, techListsArray);
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		Log.d(TAG, "NEW INTENT LAUNCHED");
+	    Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        String payload = getTagData(tag);
+        
+        if (mode.equals("scan")) {
+        	scanResultTextView.setText(payload);
+        } else {
+        	
+    		EditText currentValueEditText = (EditText)findViewById(R.id.current_value);
+    		
+    		Block block = db.getBlockByTagValue(payload);
+    		Log.d(TAG, "BLOCK FOUND: " + block.tagId);
+    		String currentTagValue = getResources().getString(R.string.unmapped);
+    		if (block != null) {
+    			currentTagValue = block.text;
+    			currentBlockId = block.id;
+    		} 
+    		currentValueEditText.setText(currentTagValue);
+    		
+    		newValueTextbox = (EditText)findViewById(R.id.remap_value);
+    		final Button saveButton = (Button)findViewById(R.id.save_button);
+    		newValueTextbox.addTextChangedListener(new TextWatcher() {
+
+				@Override
+				public void afterTextChanged(Editable edit) {
+					if (edit.toString().isEmpty()) {
+						saveButton.setEnabled(false);
+					} else {
+						saveButton.setEnabled(true);
+					}
+					
+				}
+
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+					// TODO Auto-generated method stub	
+				}
+
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+					// TODO Auto-generated method stub
+					
+				}
+    			
+    		});
+    		
+        }
+        
+	    Log.d(TAG, "TAG PAYLOAD: " + payload);
+	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

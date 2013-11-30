@@ -72,7 +72,7 @@ public class LessonsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_lessons);
 
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		// Show the Up button in the action bar.

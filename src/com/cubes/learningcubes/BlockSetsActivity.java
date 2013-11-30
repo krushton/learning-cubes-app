@@ -32,7 +32,7 @@ public class BlockSetsActivity extends Activity {
 		setContentView(R.layout.activity_block_sets);
 		// Show the Up button in the action bar.
 		setupActionBar();
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		
 		ListView lv = (ListView)findViewById(R.id.block_set_list);
 		lv.setAdapter(new BlockSetListAdapter(this, convertListToArray(db.getBlockSets()) ));

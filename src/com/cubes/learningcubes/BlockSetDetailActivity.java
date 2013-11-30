@@ -19,8 +19,8 @@ import android.widget.TextView;
 public class BlockSetDetailActivity extends Activity {
 
 	private long setId;
-	private final String TAG = "Block set detail";
 	private String setName;
+	private final String TAG = "Block set detail";
 	private CubesDbHelper db;
 	
 	@Override
@@ -31,11 +31,9 @@ public class BlockSetDetailActivity extends Activity {
 		
 		setupActionBar();
 		setId = getIntent().getExtras().getLong("setId");
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		
-		//todo: update so that this gets correct block set not just the first one
 		BlockSet blockSet = db.getBlockSetById(setId);
-		String setName = blockSet.name;
 		
 		ListView lv = (ListView)findViewById(R.id.blocks_in_set_list);
 		Block[] values = blockSet.asArray();
@@ -44,6 +42,7 @@ public class BlockSetDetailActivity extends Activity {
 		
 		TextView blockSetNameText = (TextView)findViewById(R.id.block_set_name_detail);
 		blockSetNameText.setText(blockSet.name);
+		setName = blockSet.name;
 		
 		TextView numBlocksText = (TextView)findViewById(R.id.number_of_blocks_detail);
 		numBlocksText.setText(blockSet.size() + " blocks"); 
@@ -61,6 +60,7 @@ public class BlockSetDetailActivity extends Activity {
 		Intent intent = new Intent(this, ScanActivity.class);
 		intent.putExtra("setId", setId);
 		intent.putExtra("mode", "details");
+		intent.putExtra("setName", setName);
 		startActivity(intent);
 	}
 

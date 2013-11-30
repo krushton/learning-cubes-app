@@ -26,7 +26,7 @@ public class SessionDetailActivity extends Activity {
 		setContentView(R.layout.activity_session_detail);
 		// Show the Up button in the action bar.
 		setupActionBar();
-		db = new CubesDbHelper(this);
+		db = CubesDbHelper.getInstance(this);
 		
 		long sessionId = getIntent().getLongExtra("sessionId", 0);
 		Session session = db.getSessionById(sessionId);

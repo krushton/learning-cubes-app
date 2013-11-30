@@ -43,17 +43,16 @@
                 android:value="com.cubes.learningcubes.MainActivity" />
 
             <intent-filter>
-                <action android:name="android.nfc.action.TAG_DISCOVERED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+    			<action android:name="android.nfc.action.TECH_DISCOVERED"/>
+			</intent-filter>
+			<meta-data android:name="android.nfc.action.TECH_DISCOVERED"
+    			android:resource="@xml/nfc_filter" />
+			
             <intent-filter>
-                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+                <action android:name="android.nfc.action.TAG_DISCOVERED"/>
             </intent-filter>
 
-            <meta-data
-                android:name="android.nfc.action.TECH_DISCOVERED"
-                android:resource="@xml/nfc_filter" />
+			
         </activity>
         <activity
             android:name="com.cubes.learningcubes.SessionsActivity"
