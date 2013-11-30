@@ -39,5 +39,7 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="title_activity_lesson_detail">Lesson Detail</string>
+    <string name="title_activity_statistics">Statistics</string>
+    <string name="unmapped">[unmapped]</string>
 
 </resources>

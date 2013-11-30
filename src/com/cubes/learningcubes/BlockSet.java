@@ -7,10 +7,12 @@ import java.util.Arrays;
 public class BlockSet {
 	ArrayList<Block> set;
 	String name;
-	int id;
+	long id;
 	boolean enabled;
+	static int ENABLED = 1;
+	static int DISABLED = 0;
 	
-	public BlockSet(int id, String name, boolean enabled, ArrayList<Block> set) {
+	public BlockSet(String name, boolean enabled, ArrayList<Block> set, long id) {
 		this.id = id;
 		this.name = name;
 		this.enabled = enabled;
@@ -21,21 +23,8 @@ public class BlockSet {
 		}
 	}
 	
-	public BlockSet(int id, String name, boolean enabled) {
-		this.id = id;
-		this.name = name;
-		this.enabled = enabled;
-		this.set = new ArrayList<Block>();
-	}
-	
-	public BlockSet(int id, String name, boolean enabled, Block[] set) {
-		this.id = id;
-		this.name = name;
-		if (set == null || set.length == 0) {
-			this.set = new ArrayList<Block>();
-		} else {
-			this.set.addAll(Arrays.asList(set));
-		}
+	public BlockSet(String name, boolean enabled, ArrayList<Block> set) {
+		this(name, enabled, set, 0);
 	}
 	
 	public void add(Block newBlock) {
@@ -51,7 +40,7 @@ public class BlockSet {
 	
 	public Block get(String blockId) {
 		for (Block item : set) {
-			if (item.id == blockId) {
+			if (item.tagId == blockId) {
 				return item;
 			}
 		}

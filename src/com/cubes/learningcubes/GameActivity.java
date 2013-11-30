@@ -4,16 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.UUID;
+import java.util.Random;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothA2dp;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,7 +16,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,30 +25,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SimpleExpandableListAdapter;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class GameActivity extends Activity implements TextToSpeech.OnInitListener {
-	 private BluetoothA2dp bluetoothProfile;
-	 private BluetoothAdapter mBluetoothAdapter;
-	 private BluetoothDevice device;
 	 private TextToSpeech tts;
-	 private AudioManager manager;
 	 private boolean mConnected = false;
 	 private final String SPEAKER_MAC_ADDRESS = "00:5F:2A:A6:73:9C";
 	 private final String TAG = "Learning Service";
-	 private boolean bluetoothReady = false;
+	 private LinearLayout outputLayout;
+	 private CubesDbHelper db;
+	 private boolean serviceBound = false;
 	 
-	 private boolean mScanning;
 	 private Handler mHandler;
-
-     private static final int REQUEST_ENABLE_BT = 1;
-     // Stops scanning after 10 seconds.
-     private static final long SCAN_PERIOD = 10000;
 	 
 	 private final String DEVICE_MAC_ADDRESS = "00:07:80:60:D5:BE";
 	 private final String kServiceUUID = "195AE58A-437A-489B-B0CD-B7C9C394BAE4".toLowerCase();
-
 	 private final String readCharacteristicUUID = "21819AB0-C937-4188-B0DB-B9621E1696CD".toLowerCase();
 	 private final String writeCharacteristicUUID = "5FC569A0-74A9-4FA4-B8B7-8354C86E45A4".toLowerCase();
 	 private BluetoothLeService mBluetoothLeService;
@@ -65,7 +52,6 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 	        @Override
 	        public void onServiceConnected(ComponentName componentName, IBinder service) {
 	            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-	            Log.e(TAG, "HI FROM BLUETOOTH SERVICE");
 	            if (!mBluetoothLeService.initialize()) {
 	                Log.e(TAG, "Unable to initialize Bluetooth");
 	                finish();
@@ -89,6 +75,8 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		setContentView(R.layout.activity_game);
 		mHandler = new Handler();
 		setupActionBar();
+		outputLayout = (LinearLayout)findViewById(R.id.output_layout);
+		db = new CubesDbHelper(this);
 		tts = new TextToSpeech(this, this);
 	}
 	
@@ -102,14 +90,15 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
             finish();
         }
    
-	    AudioManager manager = (AudioManager)getSystemService(this.AUDIO_SERVICE);
-		manager.setBluetoothScoOn(true);
+        
+	  //  AudioManager manager = (AudioManager)getSystemService(this.AUDIO_SERVICE);
+	//	manager.setBluetoothScoOn(true);
 		Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
+        serviceBound = true;
+      //  startLesson();
 		//adapter.startDiscovery();
 	}
-
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
@@ -129,13 +118,6 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		}
@@ -169,7 +151,9 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mServiceConnection);
+        if (serviceBound) {
+        	unbindService(mServiceConnection);
+        }
         mBluetoothLeService = null;
         if (tts != null) {
 			tts.stop();
@@ -178,8 +162,9 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
     }
 	
 	private void startLesson() {
-		Log.d(TAG, "START LESSON!");
-		speak("Hello");
+		Lesson lesson = db.getActiveLesson();
+		Question q = lesson.getRandomQuestion();
+		//speak(q.text);
 	}
 	
 	public void speak(String text) {
@@ -187,26 +172,6 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 	
-	private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    invalidateOptionsMenu();
-                }
-            }, SCAN_PERIOD);
-
-            mScanning = true;
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
-        } else {
-            mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-        }
-        invalidateOptionsMenu();
-    }
 
 	 // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
@@ -221,6 +186,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
+                //startLesson();
                 //updateConnectionState(R.string.connected);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
@@ -230,15 +196,19 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                Log.d(TAG, "ADDITIONAL SHIT: " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            	TextView tv = (TextView)findViewById(R.id.result_text);
+            	String extra = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+            	Log.d(TAG, "EXTRA : " + extra);
+            	tv.setText("Values: " + extra);
+          
             }
         }
     };
 
+    
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
@@ -251,30 +221,46 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 
         // Loops through available GATT Services.
         for (BluetoothGattService gattService : gattServices) {
-            HashMap<String, String> currentServiceData = new HashMap<String, String>();
             uuid = gattService.getUuid().toString();
 
+            Log.d(TAG, "uuid of service: " + uuid);
             if (uuid.equals(kServiceUUID)) {
-            	Log.d(TAG, "found service");
+            	TextView service = new TextView(this);
+            	service.setText("Found our service");
+            //	outputLayout.addView(service);
+            	Log.d(TAG, "FOUND SERVICE");
             }
+           
 
             
             List<BluetoothGattCharacteristic> gattCharacteristics = gattService.getCharacteristics();
+            Log.d(TAG, "NUMBER OF CHARAS" + gattCharacteristics.size());
             ArrayList<BluetoothGattCharacteristic> charas =
                     new ArrayList<BluetoothGattCharacteristic>();
 
             // Loops through available Characteristics.
             for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                
+            	TextView msg = new TextView(this);
+            	
                 uuid = gattCharacteristic.getUuid().toString();
+                Log.d(TAG, "UUID of char: " + uuid);
                 if (uuid.equals(writeCharacteristicUUID)) {
                 	charas.add(gattCharacteristic);
-                	Log.d(TAG, "found characteristic: write");
+                	Log.d(TAG, "FOUND WRITE");
+                	msg.setText("Found write characteristic");
+
                 } else if (uuid.equals(readCharacteristicUUID)) {
-                	Log.d(TAG, "found characteristic: read");
+                	msg.setText("Found read characteristic");
+                	Log.d(TAG, "FOUND READ");
                 	charas.add(gattCharacteristic);
+                } else {
+                	msg.setText("Found other characteristic, uuid: " + uuid);
+                	Log.d(TAG, "FOUND CHARACT");
                 }
+                
+            //	outputLayout.addView(msg);
             }
+            
             
             for (BluetoothGattCharacteristic characteristic : charas) {
             	final int charaProp = characteristic.getProperties();
@@ -300,58 +286,5 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
    
     }
 
-	// Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
-        @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                	
-                    final String deviceAddress = device.getAddress();
-                    if (deviceAddress.equals(DEVICE_MAC_ADDRESS)) {
-                    	
-                    }
-                    
-                }
-            });
-        }
-    };
-	/*
-	private class SpeakerLocatingReceiver extends BroadcastReceiver {
-		
-	    public void onReceive(Context context, Intent intent) {
-	    	
-	        String action = intent.getAction(); //may need to chain this to a recognizing function
-	        
-	        if (BluetoothDevice.ACTION_FOUND.equals(action)){
-	        	Log.d(TAG, "--- device found ---");
-	      
-	            
-	            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-	            Log.d(TAG, device.getAddress());
-	            if (device.getAddress().equals("00:5F:2A:A6:73:9C")) {
-	            	adapter.cancelDiscovery();
-	            	BluetoothSocket socket;
-					try {
-						socket = device.createInsecureRfcommSocketToServiceRecord(APP_UUID);
-		            	socket.connect();
-		            	bluetoothReady = true;
-					} catch (IOException e) {
-						Log.e(TAG, "FAILED");
-						// TODO Auto-generated catch block
-						Log.e(TAG, e.getMessage());
-						e.printStackTrace();
-						bluetoothReady = false;
-					}
-	            	
-	            }
-	        }
-	  
-		}
-	}
-	*/
 
 }

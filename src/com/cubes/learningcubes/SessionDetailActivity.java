@@ -1,21 +1,24 @@
 package com.cubes.learningcubes;
 
-import java.util.Date;
-import java.util.HashMap;
-
-import android.os.Bundle;
+import java.util.ArrayList;
 import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.TableLayout;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.support.v4.app.NavUtils;
 
 public class SessionDetailActivity extends Activity {
 	
-	private TableLayout tableLayout;
+	private CubesDbHelper db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,29 +26,23 @@ public class SessionDetailActivity extends Activity {
 		setContentView(R.layout.activity_session_detail);
 		// Show the Up button in the action bar.
 		setupActionBar();
-		tableLayout = (TableLayout)findViewById(R.id.session_table);
-		int lessonId = getIntent().getExtras().getInt("lessonId");
-		HashMap<String, Integer> questions = Database.sessions[0].log;
-
-		for (String key : questions.keySet()) {
-			
-			TableRow tr = new TableRow(this);
-			TextView q = new TextView(this);
-			q.setText(key);
-			tr.addView(q);
-			
-			TextView c = new TextView(this);
-			if (questions.get(key) == 1){
-				c.setTextColor(getResources().getColor(R.color.green));
-				c.setText("Correct");
-			} else {
-				c.setTextColor(getResources().getColor(R.color.red));
-				c.setText("Incorrect");
-			}
-			tr.addView(c);
-			tableLayout.addView(tr);
-			
-		}
+		db = new CubesDbHelper(this);
+		
+		long sessionId = getIntent().getLongExtra("sessionId", 0);
+		Session session = db.getSessionById(sessionId);
+		
+		TextView sessionDateTextView = (TextView)findViewById(R.id.session_date);
+		sessionDateTextView.setText(session.getDate());
+		
+		TextView sessionLengthTextView = (TextView)findViewById(R.id.session_summary);
+		sessionLengthTextView.setText(session.getSummary());
+		
+		TextView lessonNameTextView = (TextView)findViewById(R.id.session_lesson_name);
+		lessonNameTextView.setText(session.lessonName);
+		
+		ListView lv = (ListView)findViewById(R.id.session_log_list);
+		LogItem[] values = convertListToArray(session.sessionLog);
+		lv.setAdapter(new LogListAdapter(this, values));
 	}
 
 	/**
@@ -79,6 +76,47 @@ public class SessionDetailActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private LogItem[] convertListToArray(ArrayList<LogItem> list) {
+		LogItem[] values = new LogItem[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			values[i] = list.get(i);
+		}
+		return values;
+	}
+
+	private class LogListAdapter extends ArrayAdapter<LogItem>{
+
+          private final Context context;
+          private final LogItem[] values;
+
+          public LogListAdapter(Context context, LogItem[] set) {
+                  
+          //call the super class constructor and provide the ID of the resource to use instead of the default list view item
+            super(context, R.layout.skinny_log_list_item, set);
+            this.context = context;
+            this.values = set;
+          }
+          
+          //this method is called once for each item in the list
+          @Override
+          public View getView(int position, View convertView, ViewGroup parent) {
+
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View listItem = inflater.inflate(R.layout.skinny_log_list_item, parent, false);
+          
+            TextView questionText = (TextView)listItem.findViewById(R.id.log_question_name);
+            questionText.setText(values[position].questionText);
+            
+            ImageView icon = (ImageView)listItem.findViewById(R.id.log_success_icon);
+            if (!values[position].questionResult) {
+            	icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_x));
+            }
+            return listItem;
+          
+          }
+	          
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.cubes.learningcubes;
 
+import java.util.ArrayList;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.SearchManager;
@@ -14,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -27,6 +30,7 @@ public class LessonsActivity extends Activity {
 	
 	private LessonsListAdapter adapter;
 	private final String TAG = "Lesson activity";
+	private CubesDbHelper db;
 	private ActionMode mActionMode; 
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -68,11 +72,12 @@ public class LessonsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_lessons);
 
+		db = new CubesDbHelper(this);
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		// Show the Up button in the action bar.
 		actionBar.setDisplayHomeAsUpEnabled(true);
-		adapter = new LessonsListAdapter(this, Database.lessons);
+		adapter = new LessonsListAdapter(this, convertListToArray(db.getLessons()));
 		
         
 		ListView lv = (ListView)findViewById(R.id.lessons_list);
@@ -150,6 +155,14 @@ public class LessonsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	private Lesson[] convertListToArray(ArrayList<Lesson> list) {
+		Lesson[] values = new Lesson[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			values[i] = list.get(i);
+		}
+		return values;
+	}
+	
 	private class LessonsListAdapter extends ArrayAdapter<Lesson>{
 
 	    private final Context context;
@@ -177,6 +190,15 @@ public class LessonsActivity extends Activity {
 	      TextView description = (TextView)listItem.findViewById(R.id.lesson_description);
 	      description.setText(values[position].description);
 	      
+	      listItem.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Log.d(TAG, "LIST ITEM CLICK");
+				
+			}
+	      
+	      });
 
 	      return listItem;
 	    

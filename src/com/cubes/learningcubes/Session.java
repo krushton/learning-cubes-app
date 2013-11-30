@@ -1,27 +1,31 @@
 package com.cubes.learningcubes;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+
+import android.util.Log;
 
 public class Session {
 	
-	private final String TAG = "SessionData";
+	private final static String TAG = "SessionData";
 	
 	Calendar calendar;	//date of the session
+	int utcDate;
     int sessionLength; //length of the session in seconds
     int numberCorrect; //how many of the attempted questions were correct
     int numberTried; //how many questions were attempted
     String lessonName; //name of the lesson
-    int lessonId;	//id of the lesson
-    int id; //id of the session
+    long lessonId;	//id of the lesson
+    long id; //id of the session
     float score;
-    HashMap<String, Integer> log;
+    ArrayList<LogItem> sessionLog;
     
-    public Session(Date date, int sessionLength, int numberCorrect, int numberTried, String lessonName, 
-    		int lessonId, int sessionId) {
+    public Session(long dateInMillis, int sessionLength, int numberCorrect, int numberTried, String lessonName, 
+    		long lessonId, long sessionId, ArrayList<LogItem> sessionLog) {
+	
     	this.calendar = Calendar.getInstance();
-    	this.calendar.set(date.getYear(), date.getMonth(), date.getDay());
+    	convertDate(dateInMillis);
     	this.sessionLength = sessionLength;
     	this.numberCorrect = numberCorrect;
     	this.numberTried = numberTried;
@@ -29,8 +33,17 @@ public class Session {
     	this.lessonId = lessonId;
     	this.id = sessionId;
     	this.score = (float)numberCorrect/(float)numberTried;
-    	this.log = new HashMap<String, Integer>();
+    	if (sessionLog == null) {
+    		this.sessionLog = new ArrayList<LogItem>();
+    	} else {
+    		this.sessionLog = sessionLog;
+    	}
     }
+    
+    public Session(long dateInMillis, int sessionLength, String lessonName, long lessonId, ArrayList<LogItem> sessionLog) {
+    	this(dateInMillis, sessionLength, 0, 0, lessonName, lessonId, 0, sessionLog);
+    }
+    
     
     public int getScore() {
     	return (int)(score * 100);
@@ -50,13 +63,13 @@ public class Session {
     public String getDate() {
     
     	Calendar cal = Calendar.getInstance();
-    	if (cal.get(Calendar.DATE) == calendar.get(Calendar.DATE)) {
+    	if (cal.get(Calendar.DATE) == calendar.get(Calendar.DAY_OF_MONTH)) {
     		return "Today";
     	}
-    	if (cal.get(Calendar.DATE) - calendar.get(Calendar.DATE) == 1) { //todo: make this account for end/beg of month
+    	if (cal.get(Calendar.DATE) - calendar.get(Calendar.DAY_OF_MONTH) == 1) { //todo: make this account for end/beg of month
     		return "Yesterday";
     	}
-    	return calendar.get(Calendar.MONTH) + "/" + calendar.get(Calendar.DATE);
+    	return calendar.get(Calendar.MONTH) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
     }
     
     public int getScoreDrawable() {
@@ -70,7 +83,7 @@ public class Session {
     	return R.drawable.score_red;
     }
     
-    private static int[] splitToComponentTimes(int val)
+    private int[] splitToComponentTimes(long val)
     {
         int hours = (int) val / 3600;
         int remainder = (int) val - hours * 3600;
@@ -96,10 +109,18 @@ public class Session {
     	  out.append(s[1]);
     	  start = 2;
       }
-      for (int x=start;x<s.length;++x)
+      for (int x=start;x<s.length;++x) {
         out.append(delim).append(s[x]);
+      }
       return out.toString();
     }
+    
+ 
+    private void convertDate(long millisecs) {
+      Date date = new Date(millisecs);
+      this.calendar.set(date.getYear(), date.getMonth(), date.getDay());
+    }
+   
 
 
 }

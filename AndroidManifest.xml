@@ -135,6 +135,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
         </activity>
+        <activity
+            android:name="com.cubes.learningcubes.StatisticsActivity"
+            android:label="@string/title_activity_statistics"
+            android:parentActivityName="com.cubes.learningcubes.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cubes.learningcubes.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

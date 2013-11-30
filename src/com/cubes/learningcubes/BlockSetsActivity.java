@@ -1,5 +1,7 @@
 package com.cubes.learningcubes;
 
+import java.util.ArrayList;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
@@ -22,6 +24,7 @@ import android.support.v4.app.NavUtils;
 public class BlockSetsActivity extends Activity {
 	
 	private String TAG = "Block sets activity";
+	private CubesDbHelper db;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +32,10 @@ public class BlockSetsActivity extends Activity {
 		setContentView(R.layout.activity_block_sets);
 		// Show the Up button in the action bar.
 		setupActionBar();
+		db = new CubesDbHelper(this);
+		
 		ListView lv = (ListView)findViewById(R.id.block_set_list);
-		lv.setAdapter(new BlockSetListAdapter(this, Database.blockSets));
+		lv.setAdapter(new BlockSetListAdapter(this, convertListToArray(db.getBlockSets()) ));
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -78,6 +83,14 @@ public class BlockSetsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	private BlockSet[] convertListToArray(ArrayList<BlockSet> list) {
+		BlockSet[] values = new BlockSet[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			values[i] = list.get(i);
+		}
+		return values;
+	}
+	
 	private class BlockSetListAdapter extends ArrayAdapter<BlockSet>{
 
         private final Context context;
@@ -111,7 +124,7 @@ public class BlockSetsActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					int id = (Integer)v.getTag();
+					long id = (Long)v.getTag();
 					setListItemEnabled(id);
 				}
   
@@ -124,10 +137,11 @@ public class BlockSetsActivity extends Activity {
         
         }
         
-        public void setListItemEnabled(int id){
+        public void setListItemEnabled(long id){
       	  for (BlockSet set : values) {
       		  if (set.id == id) {
       			  set.enabled = true;
+      			  db.changeEnabledBlockSet(set.id);
       		  } else {
       			  set.enabled = false;
       		  }
@@ -137,4 +151,5 @@ public class BlockSetsActivity extends Activity {
         
 	}
 
+	
 }

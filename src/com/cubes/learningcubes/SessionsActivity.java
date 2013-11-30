@@ -1,5 +1,6 @@
 package com.cubes.learningcubes;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
@@ -22,6 +23,7 @@ import android.widget.ListView;
 public class SessionsActivity extends Activity {
 	
 	private final String TAG = "Sessions Activity";
+	private CubesDbHelper db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +31,14 @@ public class SessionsActivity extends Activity {
 		setContentView(R.layout.activity_sessions);
 		// Show the Up button in the action bar.
 		setupActionBar();
+		db = new CubesDbHelper(this);
 		ListView lv = (ListView)findViewById(R.id.sessions_list);
-		lv.setAdapter(new SessionsListAdapter(this, Database.sessions));
+		lv.setAdapter(new SessionsListAdapter(this, convertListToArray(db.getSessions())));
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Log.d(TAG, "CLICK");
-				
+			
 				Session data = (Session)parent.getItemAtPosition(position);
 				Intent intent = new Intent(SessionsActivity.this, SessionDetailActivity.class);
 				intent.putExtra("sessionId", data.id);
@@ -78,6 +80,13 @@ public class SessionsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	private Session[] convertListToArray(ArrayList<Session> list) {
+		Session[] values = new Session[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			values[i] = list.get(i);
+		}
+		return values;
+	}
 	private class SessionsListAdapter extends ArrayAdapter<Session>{
 
         private final Context context;

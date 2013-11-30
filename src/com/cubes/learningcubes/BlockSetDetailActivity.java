@@ -6,34 +6,36 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 public class BlockSetDetailActivity extends Activity {
 
-	private int setId;
+	private long setId;
 	private final String TAG = "Block set detail";
 	private String setName;
+	private CubesDbHelper db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_block_set_detail);
 		// Show the Up button in the action bar.
+		
 		setupActionBar();
-		setId = getIntent().getExtras().getInt("setId");
+		setId = getIntent().getExtras().getLong("setId");
+		db = new CubesDbHelper(this);
 		
 		//todo: update so that this gets correct block set not just the first one
-		BlockSet blockSet = Database.blockSets[0];
-		setName = blockSet.name;
+		BlockSet blockSet = db.getBlockSetById(setId);
+		String setName = blockSet.name;
 		
 		ListView lv = (ListView)findViewById(R.id.blocks_in_set_list);
 		Block[] values = blockSet.asArray();
@@ -114,11 +116,11 @@ public class BlockSetDetailActivity extends Activity {
 	            text.setText(values[position].text);
 	            
 	            TextView idText = (TextView)listItem.findViewById(R.id.block_id);
-	            String id = values[position].id;
+	            String id = values[position].tagId;
 	            if (id == null || id.equals("")) {
-	            	idText.setText("<unmapped>");
+	            	idText.setText(getResources().getString(R.string.unmapped));
 	            } else {
-	            	idText.setText(values[position].id);
+	            	idText.setText(values[position].tagId);
 	            }
 	         
 	            return listItem;

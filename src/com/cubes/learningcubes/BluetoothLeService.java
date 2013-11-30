@@ -32,6 +32,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.UUID;
 
@@ -122,26 +123,15 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-
+        
+     // For all other profiles, writes the data formatted in HEX.
         final byte[] data = characteristic.getValue();
-        int writeType = characteristic.getWriteType();
-        String value = characteristic.getStringValue(0);
-        Log.d(TAG, "STRING VAL: " + value);
-        
-        String desc = new String(characteristic.getDescriptor(characteristic.getUuid()).getValue());
-        Log.d(TAG, "DESCRIPTION!!: " + desc);
-        
-        
         if (data != null && data.length > 0) {
-        	Log.d(TAG, "DATA IS NOT NULL");
             final StringBuilder stringBuilder = new StringBuilder(data.length);
             for(byte byteChar : data)
                 stringBuilder.append(String.format("%02X ", byteChar));
-            intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
-        } else {
-        	Log.e(TAG, "DATA IS NULL");
+            intent.putExtra(EXTRA_DATA, stringBuilder.toString());
         }
-   
         sendBroadcast(intent);
     }
 

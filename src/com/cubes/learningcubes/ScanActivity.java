@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -33,6 +32,9 @@ public class ScanActivity extends Activity {
 	private SharedPreferences prefs;
 	private EditText newValueTextbox;
 	private String mode;
+	private CubesDbHelper db;
+	private long currentBlockId;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -40,6 +42,7 @@ public class ScanActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
+		db = new CubesDbHelper(this);
 		prefs = this.getPreferences(Context.MODE_PRIVATE);
 		scanResultTextView = (TextView)findViewById(R.id.result);
 		
@@ -47,11 +50,14 @@ public class ScanActivity extends Activity {
 		RelativeLayout editLayout = (RelativeLayout)findViewById(R.id.nfc_edit_layout);
 		
 		SharedPreferences.Editor editor = prefs.edit();
-		
+		Bundle extras = getIntent().getExtras();
 		//hack. this activity gets loaded twice for some reason, need to store the id
-		if (getIntent().getExtras() != null) {
-			mode = getIntent().getExtras().getString("mode");
-			Log.d(TAG, " TEST NOISE: " + mode);
+		if (extras != null) {
+			if (extras.containsKey("mode")) {
+					mode = getIntent().getExtras().getString("mode");
+			} else {
+					mode = "scan";
+			}
 			editor.putString("mode", mode);
 			editor.commit();
 		} else {
@@ -64,7 +70,7 @@ public class ScanActivity extends Activity {
 		}
 	
 		
-		if (mode.equals("details")) {
+		if (mode != null && mode.equals("details")) {
 			setId = getIntent().getExtras().getInt("setId", -1);
 			if (setId == -1) {
 				setId = prefs.getInt("setId", -1);
@@ -72,7 +78,7 @@ public class ScanActivity extends Activity {
 			getActionBar().setTitle("Edit Block Set");
 			
 			//todo: make this actually get the set by id
-			setName = Database.blockSets[0].name;
+			setName = db.getBlockSetById(setId).name;
 
 			
 			editor.putInt("setId", setId);
@@ -132,12 +138,16 @@ public class ScanActivity extends Activity {
             	TextView currentValueLabel = (TextView)findViewById(R.id.message_current_value);
             	currentValueLabel.setText("Current value in set \"" + setName + "\"");
         		
-        		EditText currentValue = (EditText)findViewById(R.id.current_value);
-
-            	//todo: actually find value of tag based on current block set and input id
-        		Log.d(TAG, payload);
-            	String value = "A";
-        		currentValue.setText(value);
+        		EditText currentValueEditText = (EditText)findViewById(R.id.current_value);
+        		
+        		Block block = db.getBlockByTagValue(payload);
+        		
+        		String currentTagValue = getResources().getString(R.string.unmapped);
+        		if (block != null) {
+        			currentTagValue = block.text;
+        			currentBlockId = block.id;
+        		} 
+        		currentValueEditText.setText(currentTagValue);
         		
         		newValueTextbox = (EditText)findViewById(R.id.remap_value);
         		final Button saveButton = (Button)findViewById(R.id.save_button);
@@ -209,9 +219,10 @@ public class ScanActivity extends Activity {
 	}
 
 	public void saveMapping(View v) {
-		if (!newValueTextbox.getEditableText().toString().equals("")) {
+		String boxContents = newValueTextbox.getEditableText().toString();
+		if (!boxContents.equals("")) {
 			String newVal = newValueTextbox.getText().toString();
-			//todo: remap
+			db.remapBlock(currentBlockId, newVal);
 			Toast.makeText(this, "Value saved succesfully.", Toast.LENGTH_SHORT).show();
 		}
 	}
