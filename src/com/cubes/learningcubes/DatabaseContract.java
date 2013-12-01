@@ -15,6 +15,7 @@ public final class DatabaseContract {
         public static final String LESSON_DESCRIPTION = "description";
         public static final String LESSON_ENABLED = "lessonenabled";
         public static final String LESSON_BLOCK_SET_ID = "blocksetid";
+        public static final String LESSON_CATEGORY = "lessoncategory";
     }
     
     public static abstract class QuestionEntry implements BaseColumns {

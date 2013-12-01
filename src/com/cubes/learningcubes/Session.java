@@ -11,7 +11,7 @@ public class Session {
 	private final static String TAG = "SessionData";
 	
 	Calendar calendar;	//date of the session
-	int utcDate;
+	long utcDate;
     int sessionLength; //length of the session in seconds
     int numberCorrect; //how many of the attempted questions were correct
     int numberTried; //how many questions were attempted
@@ -25,6 +25,7 @@ public class Session {
     		long lessonId, long sessionId, ArrayList<LogItem> sessionLog) {
 	
     	this.calendar = Calendar.getInstance();
+    	this.utcDate = dateInMillis;
     	convertDate(dateInMillis);
     	this.sessionLength = sessionLength;
     	this.numberCorrect = numberCorrect;
@@ -61,14 +62,8 @@ public class Session {
     }
    
     public String getDate() {
-    
-    	Calendar cal = Calendar.getInstance();
-    	if (cal.get(Calendar.DATE) == calendar.get(Calendar.DAY_OF_MONTH)) {
-    		return "Today";
-    	}
-    	if (cal.get(Calendar.DATE) - calendar.get(Calendar.DAY_OF_MONTH) == 1) { //todo: make this account for end/beg of month
-    		return "Yesterday";
-    	}
+    	Log.d(TAG, calendar.getTimeInMillis()+" time");
+    	Log.d(TAG, this.utcDate+" date");
     	return calendar.get(Calendar.MONTH) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
     }
     
@@ -116,9 +111,10 @@ public class Session {
     }
     
  
-    private void convertDate(long millisecs) {
+    @SuppressWarnings("deprecation")
+	private void convertDate(long millisecs) {
       Date date = new Date(millisecs);
-      this.calendar.set(date.getYear(), date.getMonth(), date.getDay());
+      this.calendar.set(date.getYear(), date.getMonth(), date.getDate());
     }
    
 

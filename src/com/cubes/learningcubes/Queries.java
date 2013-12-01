@@ -38,6 +38,7 @@ public class Queries {
 	    		LessonEntry.LESSON_REMOTE_ID + INT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_ENABLED + INT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_NAME + TEXT_TYPE + COMMA_SEP + 
+	    		LessonEntry.LESSON_CATEGORY + TEXT_TYPE + COMMA_SEP + 
 	    		getForeignKeyAssociation(LessonEntry.LESSON_BLOCK_SET_ID, BlockSetEntry.TABLE_NAME, BlockSetEntry._ID) + " );";   
 	    
 	    static final String CREATE_SESSION_TABLE = "CREATE TABLE " + SessionEntry.TABLE_NAME +

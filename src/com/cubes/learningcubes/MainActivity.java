@@ -34,7 +34,8 @@ public class MainActivity extends ListActivity {
 		            	startActivity(intent);
 		            	break;
 		            case 1:
-		            	//statistics
+		            	intent = new Intent(MainActivity.this, StatisticsActivity.class);
+		            	startActivity(intent);
 		            	break;
 		            case 2: 
 		            	intent = new Intent(MainActivity.this, BlockSetsActivity.class);
