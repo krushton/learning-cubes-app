@@ -81,18 +81,16 @@ public class LessonsActivity extends Activity {
 		
         
 		ListView lv = (ListView)findViewById(R.id.lessons_list);
-		lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		lv.setAdapter(adapter);
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
 					long arg3) {
-				int id = (Integer)v.getTag();
+				long id = (Long)v.getTag();
 				Intent i = new Intent(LessonsActivity.this, LessonDetailActivity.class);
 				i.putExtra("lessonId", id);
 				startActivity(i);
-				
 			}
 
       });
@@ -189,17 +187,7 @@ public class LessonsActivity extends Activity {
 	      
 	      TextView description = (TextView)listItem.findViewById(R.id.lesson_description);
 	      description.setText(values[position].description);
-	      
-	      listItem.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				Log.d(TAG, "LIST ITEM CLICK");
-				
-			}
-	      
-	      });
-
+	     
 	      return listItem;
 	    
 	    }

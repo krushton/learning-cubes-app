@@ -1,19 +1,37 @@
 package com.cubes.learningcubes;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.app.NavUtils;
+import android.widget.TextView;
 
 public class LessonDetailActivity extends Activity {
 
+	private CubesDbHelper db;
+	private Lesson lesson;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_lesson);
 		// Show the Up button in the action bar.
 		setupActionBar();
+		
+		db = CubesDbHelper.getInstance(this);
+		long id = getIntent().getExtras().getLong("lessonId");
+		lesson = db.getLessonById(id);
+		
+		TextView lessonNameTv = (TextView)findViewById(R.id.lesson_name);
+		lessonNameTv.setText(lesson.lessonName);
+		
+		TextView lessonDescriptionTv = (TextView)findViewById(R.id.lesson_description);
+		lessonDescriptionTv.setText(lesson.description);
+		
+		TextView lessonNumberQuestionsTv = (TextView)findViewById(R.id.lesson_number_questions);
+		lessonNumberQuestionsTv.setText(lesson.questions.size()+ " questions");
+		
+		getActionBar().setTitle(lesson.lessonName);
 	}
 
 	/**

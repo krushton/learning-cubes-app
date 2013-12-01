@@ -29,7 +29,6 @@
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:paddingTop="0dp"
-        android:lines="2"
         android:text="A psychadelic adventure in wonderland"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
