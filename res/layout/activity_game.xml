@@ -17,15 +17,22 @@
         android:layout_alignParentTop="true"
         android:text="Status"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-    
-     <ToggleButton
-        android:id="@+id/enableButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/bluetoothEnable"
-        android:onClick="initialize"
-        android:layout_alignParentTop="true"
-        android:text="ToggleButton" />
+
+     <ScrollView
+         android:id="@+id/scrollView1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_below="@+id/enableButton" >
+
+         <TextView
+             android:id="@+id/output"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="output goes here"
+             android:textAppearance="?android:attr/textAppearanceLarge"
+             android:width="300dp" />
+
+     </ScrollView>
 
      <LinearLayout
          android:layout_width="wrap_content"
@@ -38,15 +45,25 @@
          android:layout_marginTop="27dp"
          android:orientation="vertical" >
 
-         <TextView
-             android:id="@+id/result_text"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:text="res"
-             android:textAppearance="?android:attr/textAppearanceLarge"
-             android:width="300dp" />
-
      </LinearLayout>
-    
+
+     <ToggleButton
+         android:id="@+id/enableButton"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignTop="@+id/bluetoothEnable"
+         android:layout_toRightOf="@+id/bluetoothEnable"
+         android:onClick="initialize"
+         android:text="ToggleButton" />
+
+     <Button
+         android:id="@+id/clear"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_above="@+id/scrollView1"
+         android:layout_alignRight="@+id/scrollView1"
+         android:layout_marginRight="19dp"
+         android:onClick="clear"
+         android:text="Clear" />
 
 </RelativeLayout>

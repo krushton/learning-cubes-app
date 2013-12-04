@@ -12,6 +12,7 @@ public final class DatabaseContract {
         public static final String TABLE_NAME = "lesson";
         public static final String LESSON_REMOTE_ID = "remoteid";
         public static final String LESSON_NAME = "name";
+        public static final String LESSON_CATEGORY_ID = "categoryid";
         public static final String LESSON_DESCRIPTION = "description";
         public static final String LESSON_ENABLED = "lessonenabled";
         public static final String LESSON_BLOCK_SET_ID = "blocksetid";
@@ -51,5 +52,10 @@ public final class DatabaseContract {
         public static final String BLOCK_TEXT = "text";
         public static final String BLOCK_RFID_TAG = "tag";
         public static final String BLOCK_BLOCKSET_ID = "blocksetid";
+    }
+    
+    public static abstract class CategoryEntry implements BaseColumns {
+        public static final String TABLE_NAME = "category";
+        public static final String CATEGORY_NAME = "name";
     }
 }

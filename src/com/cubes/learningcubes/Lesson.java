@@ -14,6 +14,7 @@ public class Lesson {
 	long blockSetId;
 	long remoteId;
 	String category;
+	long categoryId;
 	boolean enabled;
 	ArrayList<Question> questions;
 	static int LESSON_ENABLED = 1;
@@ -28,9 +29,10 @@ public class Lesson {
 	static String CATEGORY_ART = "Art";
 	static String CATEGORY_GOVERNMENT = "Government";
 	private Random random;
-	public Lesson(String lessonName, String description, String category, int enableInt, long id, long remoteId, long blockSetId, ArrayList<Question> questions) {
+	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, long id, long remoteId, long blockSetId, ArrayList<Question> questions) {
 		this.lessonName = lessonName;
 		this.category = category;
+		this.categoryId = categoryId;
 		this.id = id;
 		this.remoteId = remoteId;
 		this.description = description;
@@ -48,8 +50,8 @@ public class Lesson {
 		random = new Random();
 	}
 	
-	public Lesson(String lessonName, String description, String category, int enableInt, long remoteId, long blockSetId, ArrayList<Question> questions) {
-		this(lessonName, description, category, enableInt, 0, remoteId, blockSetId, null);
+	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, long remoteId, long blockSetId, ArrayList<Question> questions) {
+		this(lessonName, description, category, categoryId, enableInt, 0, remoteId, blockSetId, null);
 	}
 
 	public Question getRandomQuestion() {

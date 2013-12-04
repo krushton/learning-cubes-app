@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Statistics</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
+<link href='style.css' rel='stylesheet' type='text/css'>
+
+</head>
+<body>
+    <div id="container">
+        <h2>Lessons</h2>
+        <div id="time-control">
+            <div class="time-toggle toggle">
+                <span id="current">All Time</span><span class="caret"></span>
+            </div>
+            <ul id="time-menu">
+                <li class="selected"><a href="#" data-time="all">All Time</a></li>
+                <li><a href="#" data-time="7d">Last 7 Days</a></li>
+                <li><a href="#" data-time="14d">Last 14 Days</a></li>
+                <li><a href="#" data-time="30d">This Month</a></li>
+                <li><a href="#" data-time="1m">Last Month</a></li>
+                <li><a href="#" data-time="6m">Last 6 Months</a></li>
+                <li><a href="#" data-time="12m">Last 12 Months</a></li>
+            </ul>
+        </div>
+        <div id="chart-toggles">
+            <div class="toggle-chart toggle selected"><a href="#" data-target="averageScore">Average Score</a></div>
+            <div class="toggle-chart toggle"><a href="#" data-target="averageLength">Average Length</a></div>
+            <div class="toggle-chart toggle"><a href="#" data-target="totalSessions">Total Sessions</a></div>
+            <div class="toggle-chart toggle"><a href="#" data-target="totalLength">Total Length</a></div>
+        </div>
+            <div class="chart" id="chart"></div>
+
+    </div>
+</body>
+<script>
+
+var charts = {
+    averageScore: { color: "#556270", title: "Average Score" },
+    averageLength: { color: "#4ECDC4", title: "Average Session Length"},
+    totalSessions: { color: "#C7F464", title: "Total Number of Sessions"},
+    totalLength: { color: "#FF6B6B", title: "Total Session Length" }
+};
+
+$(document).ready(function() {
+
+   var dataObj = JSON.parse(Android.getLessonStatistics("abcd"));
+    var labels = dataObj["lessonNames"];
+    $('.time-toggle').click(function() {
+        var visible = $('#time-menu').is(':visible');
+        if (visible) {
+            $(this).removeClass('toggled');
+            $('#time-menu').hide();
+           }
+        else {
+            $(this).addClass('toggled');
+            $('#time-menu').show();
+        }
+    });
+    
+    $('#time-menu li').click(function() {
+        var val = $(this).find('a').text();
+        $('#current').text(val);
+        $('#time-menu li').removeClass('selected');
+        $(this).addClass('selected');
+        $('.time-toggle').removeClass('toggled');
+        $('#time-menu').hide();
+    });
+    
+    $('.toggle-chart').click(function(e) {
+        
+        var target = $(this).find('a').data('target');
+        console.log(target);
+        var values = dataObj[target];
+   //     var values = [1, 2, 3, 4, 5];
+        $('.toggle-chart').css({'background-color': '#fff'}).removeClass('selected');   
+        $(this).addClass('selected');
+        $(this).css({'background-color': charts[target].color});
+        createBarChart(charts[target].title, charts[target].color, labels, values);
+        e.preventDefault();
+    });
+       
+    $('.toggle-chart').first().trigger('click');
+    function createBarChart(title, color, labelList, valuesList) {
+        
+        $('#chart').highcharts({
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: title, 
+            },
+            tooltip: {
+        	    pointFormat: title + ': <b>{point.y}</b>'
+            },
+            colors: [
+                color
+            ],
+            xAxis: {
+                categories: labelList,
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Score',
+                    align: 'high'
+                },
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                data: valuesList
+            }]
+        });
+    
+    
+    }
+});
+</script>
+</html>

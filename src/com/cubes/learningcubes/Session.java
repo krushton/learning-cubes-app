@@ -1,16 +1,15 @@
 package com.cubes.learningcubes;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
-import android.util.Log;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class Session {
 	
 	private final static String TAG = "SessionData";
-	
-	Calendar calendar;	//date of the session
+	DateTime datetime;
 	long utcDate;
     int sessionLength; //length of the session in seconds
     int numberCorrect; //how many of the attempted questions were correct
@@ -24,7 +23,6 @@ public class Session {
     public Session(long dateInMillis, int sessionLength, int numberCorrect, int numberTried, String lessonName, 
     		long lessonId, long sessionId, ArrayList<LogItem> sessionLog) {
 	
-    	this.calendar = Calendar.getInstance();
     	this.utcDate = dateInMillis;
     	convertDate(dateInMillis);
     	this.sessionLength = sessionLength;
@@ -62,9 +60,8 @@ public class Session {
     }
    
     public String getDate() {
-    	Log.d(TAG, calendar.getTimeInMillis()+" time");
-    	Log.d(TAG, this.utcDate+" date");
-    	return calendar.get(Calendar.MONTH) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
+    	DateTimeFormatter fmt = DateTimeFormat.forPattern("MM/dd");
+    	return fmt.print(datetime);
     }
     
     public int getScoreDrawable() {
@@ -113,8 +110,8 @@ public class Session {
  
     @SuppressWarnings("deprecation")
 	private void convertDate(long millisecs) {
-      Date date = new Date(millisecs);
-      this.calendar.set(date.getYear(), date.getMonth(), date.getDate());
+      DateTime dt = new DateTime(millisecs);
+      this.datetime = dt;
     }
    
 

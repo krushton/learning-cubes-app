@@ -19,8 +19,16 @@ public class LessonDetailActivity extends Activity {
 		setupActionBar();
 		
 		db = CubesDbHelper.getInstance(this);
-		long id = getIntent().getExtras().getLong("lessonId");
-		lesson = db.getLessonById(id);
+		Bundle extras = getIntent().getExtras();
+		long id = 0;
+		if (extras != null) {
+			id = extras.getLong("lessonId");
+		}
+		if (id != 0) {
+			lesson = db.getLessonById(id);
+		} else {
+			//get lesson from web
+		}
 		
 		TextView lessonNameTv = (TextView)findViewById(R.id.lesson_name);
 		lessonNameTv.setText(lesson.lessonName);

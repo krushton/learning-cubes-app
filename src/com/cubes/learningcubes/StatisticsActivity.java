@@ -2,20 +2,33 @@ package com.cubes.learningcubes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NavUtils;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -23,13 +36,17 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 
-public class StatisticsActivity extends Activity {
+public class StatisticsActivity extends FragmentActivity {
 	
 	
 	private final String TAG = "StatisticsActivity";
-	private final String USER_AGENT_STRING = "CubesApp";
-	private ProgressDialog dialog;
-	private CubesDbHelper db;
+	private final static String USER_AGENT_STRING = "CubesApp";
+	private static ProgressDialog dialog;
+	static final int NUM_ITEMS = 2;
+	MyAdapter mAdapter;
+    ViewPager mPager;
+
+	private static CubesDbHelper db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,29 +55,17 @@ public class StatisticsActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 		setContentView(R.layout.activity_statistics);
+		mAdapter = new MyAdapter(getSupportFragmentManager());
 		db = CubesDbHelper.getInstance(this);
-		dialog = new ProgressDialog(this);
-	    WebView webView = (WebView)findViewById(R.id.dashboard_webview);
-	    webView.setWebViewClient(new WebViewClient() {
-	    	public void onPageFinished(WebView view, String url) {                  
-	            if (dialog.isShowing()) {
-	                dialog.dismiss();
-	            }
-	        }
-	    });
-	    webView.addJavascriptInterface(new WebAppInterface(this), "Android");
-
-	    dialog.setMessage("Crunching some numbers...");
-	    dialog.setCanceledOnTouchOutside(false);
-	    dialog.show();
-	    
-	    webView.getSettings().setJavaScriptEnabled(true);
-	    webView.clearCache(true);
-	    webView.getSettings().setUserAgentString(USER_AGENT_STRING);
-	    webView.loadUrl("file:///android_asset/statistics.html");
-	    
+        mPager = (ViewPager)findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+        mPager.setCurrentItem(0);
+	  
 	}
-
+	
+	public ProgressDialog getDialog() {
+		return dialog;
+	}
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
@@ -94,91 +99,85 @@ public class StatisticsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private class WebAppInterface {
-	    Context mContext;
-
-	    /** Instantiate the interface and set the context */
-	    WebAppInterface(Context c) {
-	        mContext = c;
-	    }
-
-	    /** Show a toast from the web page */
-	    @JavascriptInterface
-	    public void showToast(String toast) {
-	        Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show();
-	    }
-	    
-	    @JavascriptInterface
-	    public String getCategoryStatistics(String dateRange) {
-			Set<String> categories = db.getCategoryNames();
-			HashMap<String, String> results = new HashMap<String, String>();
-
-	    	for (String category : categories) {
-	    		
-	    		float totalScore = 0.0f;
-	    		int totalLength = 0;
-
-	    		ArrayList<Session> sessions = db.getSessionsByCategory(category);
-	    		for (Session session : sessions) {
-	    			totalScore += session.score;
-	    			totalLength += session.sessionLength;
-	    		}
-	    	
-	    		float averageScore = totalScore/(float)sessions.size();
-	    		int averageLength = totalLength/sessions.size();
-	    		
-	    		results.put(category, averageScore + "|" + averageLength + "|" + totalScore + "|" + totalLength);
-	    		
-	    	}
-	    	JSONObject object = new JSONObject(results);
-	    	return object.toString();
-	    }
+	
 		
-		@JavascriptInterface
-	    public String getLessonStatistics(String dateRange) {
-			
-			ArrayList<Lesson> lessons = db.getLessons();
-			ArrayList<String> lessonNames = new ArrayList<String>();
-			ArrayList<Float> averageScores = new ArrayList<Float>();
-			ArrayList<Integer> totalLengths = new ArrayList<Integer>();
-			ArrayList<Integer> averageLengths = new ArrayList<Integer>();
-			ArrayList<Integer> totalSessions = new ArrayList<Integer>();
-			
-			HashMap<String, JSONArray> results = new HashMap<String, JSONArray>();
+	 public static class MyAdapter extends FragmentPagerAdapter {
+	        public MyAdapter(FragmentManager fm) {
+	            super(fm);
+	        }
 
-	    	for (Lesson lesson : lessons) {
-	    		
-	    		lessonNames.add(lesson.lessonName);
-	    		float totalScore = 0.0f;
-	    		int totalLength = 0;
+		        @Override
+		        public int getCount() {
+		            return NUM_ITEMS;
+		        }
 
-	    		ArrayList<Session> sessions = db.getSessionsForLesson(lesson.id);
-	    		for (Session session : sessions) {
-	    			totalScore += session.score;
-	    			totalLength += session.sessionLength;
-	    		}
-	    		
-	    		float averageScore = totalScore/(float)sessions.size();
-	    		int averageLength = totalLength/sessions.size();
-	    		averageScores.add(averageScore);
-	    		averageLengths.add(averageLength);
-	    		totalLengths.add(totalLength);
-	    		totalSessions.add(sessions.size());
-	    	}
-	    	JSONObject object = new JSONObject();
-	    	try {
-				object.put("lessonNames", new JSONArray(lessonNames));
-				object.put("averageScore", new JSONArray(averageScores));
-				object.put("totalLength", new JSONArray(totalLengths));
-				object.put("averageLength", new JSONArray(averageLengths));
-				object.put("totalSessions", new JSONArray(totalSessions));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    	Log.d(TAG, object.toString());
-	    	return object.toString();
-	    }
-	}
+		        @Override
+		        public Fragment getItem(int position) {
+		        	String url = "";
+		        	switch(position) {
+		        		case 0:
+		        			url = "file:///android_asset/page-one.html";
+		        			break;
+		        		case 1:
+		        		default:
+		        			url = "file:///android_asset/page-two.html";
+		        			break;
+		        	}
+		            return ScreenSlidePageFragment.newInstance(url);
+		        }
+		    }
+
+		
+		public static class ScreenSlidePageFragment extends Fragment {
+			
+			private ProgressDialog dialog;
+
+			String mUrl;
+			static ScreenSlidePageFragment newInstance(String url) {
+				ScreenSlidePageFragment f = new ScreenSlidePageFragment();
+
+	            Bundle args = new Bundle();
+	            args.putString("url", url);
+	            f.setArguments(args);
+	            
+	            return f;
+	        }
+			@Override
+	        public void onCreate(Bundle savedInstanceState) {
+	            super.onCreate(savedInstanceState);
+	            mUrl = getArguments() != null ? getArguments().getString("url") : "";
+	        }
+			 
+		    @SuppressLint("NewApi")
+			@Override
+		    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+		            Bundle savedInstanceState) {
+		        ViewGroup rootView = (ViewGroup) inflater.inflate(
+		                R.layout.web_view_fragment, container, false);
+		        WebView webView = (WebView)rootView.findViewById(R.id.web_view);
+		        webView.setWebViewClient(new WebViewClient() {
+			    	public void onPageFinished(WebView view, String url) {                  
+			            if (dialog.isShowing()) {
+			                dialog.dismiss();
+			            }
+			        }
+			    });
+			    webView.addJavascriptInterface(new WebAppInterface(getActivity(), db) , "Android");
+			    dialog = new ProgressDialog(this.getActivity());
+			    dialog.setMessage("Crunching some numbers...");
+			    dialog.setCanceledOnTouchOutside(false);
+			    dialog.show();
+			    
+			    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			    	webView.setWebContentsDebuggingEnabled(true);
+			    }
+			    
+			    webView.getSettings().setJavaScriptEnabled(true);
+			    webView.clearCache(true);
+			    webView.getSettings().setUserAgentString(USER_AGENT_STRING);
+			    webView.loadUrl(mUrl);
+		        return rootView;
+		    }
+		}
 
 }

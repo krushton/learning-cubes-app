@@ -2,6 +2,7 @@ package com.cubes.learningcubes;
 
 import com.cubes.learningcubes.DatabaseContract.BlockEntry;
 import com.cubes.learningcubes.DatabaseContract.BlockSetEntry;
+import com.cubes.learningcubes.DatabaseContract.CategoryEntry;
 import com.cubes.learningcubes.DatabaseContract.LessonEntry;
 import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
 import com.cubes.learningcubes.DatabaseContract.SessionEntry;
@@ -18,6 +19,10 @@ public class Queries {
 	    	return String.format("FOREIGN KEY(%s) REFERENCES %s(%s)",
 	    			columnName, parentTable, parentColumnName);
 	     }
+	 	 
+	 	static final String CREATE_CATEGORY_TABLE = "CREATE TABLE " + CategoryEntry.TABLE_NAME +
+	    		" (" + CategoryEntry._ID + " INTEGER PRIMARY KEY," +
+	    		CategoryEntry.CATEGORY_NAME + TEXT_TYPE + " );";
 
 	 	 static final String CREATE_BLOCK_SET_TABLE = "CREATE TABLE " + BlockSetEntry.TABLE_NAME +
 		    		" (" + BlockSetEntry._ID + " INTEGER PRIMARY KEY," +
@@ -39,6 +44,8 @@ public class Queries {
 	    		LessonEntry.LESSON_ENABLED + INT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_NAME + TEXT_TYPE + COMMA_SEP + 
 	    		LessonEntry.LESSON_CATEGORY + TEXT_TYPE + COMMA_SEP + 
+	    		LessonEntry.LESSON_CATEGORY_ID + INT_TYPE + COMMA_SEP + 
+	    		getForeignKeyAssociation(LessonEntry.LESSON_CATEGORY_ID, CategoryEntry.TABLE_NAME, CategoryEntry._ID) +
 	    		getForeignKeyAssociation(LessonEntry.LESSON_BLOCK_SET_ID, BlockSetEntry.TABLE_NAME, BlockSetEntry._ID) + " );";   
 	    
 	    static final String CREATE_SESSION_TABLE = "CREATE TABLE " + SessionEntry.TABLE_NAME +
@@ -72,7 +79,7 @@ public class Queries {
 	   static final String DELETE_LESSON_TABLE = "DROP TABLE IF EXISTS " + LessonEntry.TABLE_NAME;
 	   static final String DELETE_BLOCK_TABLE = "DROP TABLE IF EXISTS " + BlockEntry.TABLE_NAME;
 	   static final String DELETE_BLOCK_SET_TABLE = "DROP TABLE IF EXISTS " + BlockSetEntry.TABLE_NAME;
-	   
+	   static final String DELETE_CATEGORY_TABLE = "DROP TABLE IF EXISTS " + CategoryEntry.TABLE_NAME;
 	   
 	   
 	   

@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.joda.time.DateTime;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -16,6 +18,7 @@ import android.util.Log;
 
 import com.cubes.learningcubes.DatabaseContract.BlockEntry;
 import com.cubes.learningcubes.DatabaseContract.BlockSetEntry;
+import com.cubes.learningcubes.DatabaseContract.CategoryEntry;
 import com.cubes.learningcubes.DatabaseContract.LessonEntry;
 import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
 import com.cubes.learningcubes.DatabaseContract.SessionEntry;
@@ -23,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 25;
+    public static final int DATABASE_VERSION = 28;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -54,6 +57,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     
     public void onCreate(SQLiteDatabase db) {
         this.db = db;
+
+        db.execSQL(Queries.CREATE_CATEGORY_TABLE);
         db.execSQL(Queries.CREATE_BLOCK_SET_TABLE);
         db.execSQL(Queries.CREATE_BLOCK_TABLE);
         db.execSQL(Queries.CREATE_LESSON_TABLE);
@@ -72,6 +77,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         db.execSQL(Queries.DELETE_LESSON_TABLE);
         db.execSQL(Queries.DELETE_BLOCK_TABLE);
         db.execSQL(Queries.DELETE_BLOCK_SET_TABLE);
+        db.execSQL(Queries.DELETE_CATEGORY_TABLE);
         onCreate(db);
     }
     
@@ -149,6 +155,19 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return lessons;
     }
     
+    public ArrayList<Lesson> getLessonsByCategory(long id) {
+    	getDbIfNecessary();
+    	Cursor c = db.query(LessonEntry.TABLE_NAME, null, LessonEntry.LESSON_CATEGORY_ID + " = " + id, null, null, null, null);
+    	ArrayList<Lesson> lessons = new ArrayList<Lesson>();
+    	c.moveToFirst();
+    	while(!c.isAfterLast()) {
+    		Lesson lesson = getLessonFromCursor(c);
+    		lessons.add(lesson);
+    		c.moveToNext();
+    	}
+    	return lessons;
+    }
+    
     public ArrayList<Session> getSessions() {
     	getDbIfNecessary();
     	Cursor c = db.query(SessionEntry.TABLE_NAME, null, null, null, null, null, SessionEntry.SESSION_DATE + " ASC");
@@ -161,6 +180,20 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	}
     	return sessions;
     }
+    
+    public ArrayList<Session> getSessionsByDate(DateTime date) {
+    	getDbIfNecessary();
+    	Cursor c = db.query(SessionEntry.TABLE_NAME, null, SessionEntry.SESSION_DATE + " = " + date.getMillis(), null, null, null, SessionEntry.SESSION_DATE + " ASC");
+    	ArrayList<Session> sessions = new ArrayList<Session>();
+    	c.moveToFirst();
+    	while(!c.isAfterLast()) {
+    		Session session = getSessionFromCursor(c);
+    		sessions.add(session);
+    		c.moveToNext();
+    	}
+    	return sessions;
+    }
+    
     
     public Lesson getActiveLesson() {
     	getDbIfNecessary();
@@ -223,10 +256,12 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     private Lesson getLessonFromCursor(Cursor q) {
     	String name = q.getString(q.getColumnIndex(LessonEntry.LESSON_NAME));
     	String description = q.getString(q.getColumnIndex(LessonEntry.LESSON_DESCRIPTION));
+    	
     	String category = q.getString(q.getColumnIndex(LessonEntry.LESSON_CATEGORY));
     	long remoteId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_REMOTE_ID));
     	long rowId = q.getInt(q.getColumnIndex(LessonEntry._ID));
     	long setId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_BLOCK_SET_ID));
+    	long categoryId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_CATEGORY_ID));
     	int enabled = q.getInt(q.getColumnIndex(LessonEntry.LESSON_ENABLED));
     	Cursor c = db.query(QuestionEntry.TABLE_NAME, null, QuestionEntry.QUESTION_LESSON_ID + " = " + rowId, null, null, null, null);
     	ArrayList<Question> questions = new ArrayList<Question>();
@@ -237,7 +272,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	questions.add(question);
         	c.moveToNext();
     	}
-    	return new Lesson(name, description, category, enabled, rowId, remoteId, setId, questions);
+    	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions);
     }
     
     private Question getQuestionFromCursor(Cursor c) {    	
@@ -269,21 +304,36 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return sessions;
     }
     
-    public Set<String> getCategoryNames() {
+    public ArrayList<Category> getCategories() {
     	db = this.getWritableDatabase();
-    	Set<String> categories = new HashSet<String>();
-		Cursor q = db.query(LessonEntry.TABLE_NAME, null, null, null, null, null, null);
-		q.moveToFirst();
+    	Cursor q = db.query(CategoryEntry.TABLE_NAME, null, null, null, null, null, null);
+    	q.moveToFirst();
+    	ArrayList<Category> results = new ArrayList<Category>();
 		while(!q.isAfterLast()) {
-        	String category = q.getString(q.getColumnIndex(LessonEntry.LESSON_CATEGORY));
-        	categories.add(category);
+        	Category category = getCategoryFromCursor(q);
+        	results.add(category);
+        	q.moveToNext();
     	}
-		return categories;
+		return results;
     }
     
-    public ArrayList<Session> getSessionsByCategory(String categoryName) {
+    public Category getCategoryById(long id) {
     	db = this.getWritableDatabase();
-    	ArrayList<Lesson> lessons = getLessonsInCategory(categoryName);
+    	Cursor q = db.query(CategoryEntry.TABLE_NAME, null, CategoryEntry._ID + " = " + id, null, null, null, null);
+    	q.moveToFirst();
+    	return getCategoryFromCursor(q);
+    }
+    
+    public Category getCategoryFromCursor(Cursor c) {
+    	long id = c.getInt(c.getColumnIndex(CategoryEntry._ID));
+    	String name = c.getString(c.getColumnIndex(CategoryEntry.CATEGORY_NAME));
+    	ArrayList<Lesson> lessons = getLessonsByCategory(id);
+    	return new Category(name, id, lessons);
+    }
+    
+    public ArrayList<Session> getSessionsByCategory(long categoryId) {
+    	db = this.getWritableDatabase();
+    	ArrayList<Lesson> lessons = getLessonsByCategory(categoryId);
     	ArrayList<Session> sessions = new ArrayList<Session>();
     	for (Lesson lesson : lessons) {
     		Cursor q = db.query(SessionEntry.TABLE_NAME, null,  SessionEntry.SESSON_LESSON_ID + " = " + lesson.id, null, null, null, null);
@@ -297,19 +347,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return sessions;
     }
     
-    public ArrayList<Lesson> getLessonsInCategory(String categoryName) {
-    	db = this.getWritableDatabase();
-    	Cursor q = db.query(LessonEntry.TABLE_NAME, null,  LessonEntry.LESSON_CATEGORY + " = " + categoryName, null, null, null, null);
-    	q.moveToFirst();
-    	ArrayList<Lesson> lessons = new ArrayList<Lesson>();
-    	while(!q.isAfterLast()) {
-        	Lesson lesson = getLessonFromCursor(q);
-        	lessons.add(lesson);
-        	q.moveToNext();
-    	}
-    	return lessons;
-    	
-    }
     
     private LogItem getLogFromCursor(Cursor c) {
     	long id = c.getInt(c.getColumnIndex(SessionLogEntry._ID));
@@ -375,12 +412,20 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return sets;
     }
     
+    public long addCategory(Category category) {
+    	getDbIfNecessary();
+    	ContentValues values = new ContentValues();
+    	values.put(CategoryEntry.CATEGORY_NAME, category.name);
+    	return db.insert(CategoryEntry.TABLE_NAME, null, values);
+    }
+    
     public long addLesson(Lesson lesson) {
     	getDbIfNecessary();
     	ContentValues values = new ContentValues();
     	values.put(LessonEntry.LESSON_NAME, lesson.lessonName);
     	values.put(LessonEntry.LESSON_DESCRIPTION, lesson.description);
     	values.put(LessonEntry.LESSON_CATEGORY, lesson.category);
+    	values.put(LessonEntry.LESSON_CATEGORY_ID, lesson.categoryId);
     	values.put(LessonEntry.LESSON_BLOCK_SET_ID, lesson.blockSetId);
     	values.put(LessonEntry.LESSON_REMOTE_ID, lesson.remoteId);
     	if (lesson.enabled) {
@@ -404,7 +449,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	getDbIfNecessary();
     	ContentValues values = new ContentValues();
     	values.put(SessionEntry.SESSION_LENGTH, session.sessionLength);
-    	values.put(SessionEntry.SESSION_DATE, session.calendar.getTimeInMillis());  	 
+    	values.put(SessionEntry.SESSION_DATE, session.datetime.getMillis());  	 
     	values.put(SessionEntry.SESSON_LESSON_ID, session.lessonId);
     	return db.insert(SessionEntry.TABLE_NAME, null, values);
     }
@@ -476,9 +521,27 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	    addBlock(b);
     	}
     	
+    	String[] categoryNames =  { "Spelling", "Art", "Science", "Music", "History", "Government", "Math",
+    			"Reading", "Geography" };
+    	
+    	Category spellingCategory = null;
+    	Category mathCategory = null;
+    	
+    	for (int i = 0; i < categoryNames.length; i++) {
+    		Category category = new Category(categoryNames[i]);
+    		long id = addCategory(category);
+    		category.id = id;
+    		if (categoryNames[i].equals("Spelling")) {
+    			spellingCategory = category;
+    		}
+    		else if (categoryNames[i].equals("Math")) {
+    			mathCategory = category;
+    		}
+    	}
+    	
     	String spellingLessonName = "Spelling animals";
     	Lesson spellingLesson = new Lesson(spellingLessonName, "Practice spelling with animal name words", 
-    			Lesson.CATEGORY_SPELLING, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null);
+    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null);
     	final long spellingLessonId = addLesson(spellingLesson);
 
     	HashMap<String,String> questions = new HashMap<String, String>();
@@ -505,7 +568,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
-				Lesson.CATEGORY_SPELLING, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null);
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null);
 		
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);
 		
@@ -537,7 +600,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String mathLessonName = "Basic addition";
 		Lesson mathLesson = new Lesson(mathLessonName, "Practice adding single digit numbers", 
-				Lesson.CATEGORY_MATH, Lesson.LESSON_DISABLED, -1, numberSetId, null);
+			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null);
 		final long mathLessonId = addLesson(mathLesson);
 		
 		HashMap<String,String> moreQuestions = new HashMap<String, String>();
@@ -566,53 +629,31 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 			numberIds.add(id);
 		}
 		
-		Calendar twentyFifth = Calendar.getInstance();
-		twentyFifth.set(Calendar.DATE, 25);
-		twentyFifth.set(Calendar.YEAR, 2013);
-		twentyFifth.set(Calendar.MONTH, Calendar.NOVEMBER);
-
+		DateTime first = DateTime.now().minusDays(13);		
+		DateTime second = DateTime.now().minusDays(10);
+		DateTime third = DateTime.now().minusDays(9);
+		DateTime fourth = DateTime.now().minusDays(6);
+		DateTime fifth = DateTime.now().minusDays(2);
 		
-		Calendar twentySixth = Calendar.getInstance();
-		twentySixth.set(Calendar.DATE, 26);
-		twentySixth.set(Calendar.YEAR, 2013);
-		twentySixth.set(Calendar.MONTH, Calendar.NOVEMBER);
-		
-		Calendar twentySeventh = Calendar.getInstance();
-		twentySeventh.set(Calendar.DATE, 27);
-		twentySeventh.set(Calendar.YEAR, 2013);
-		twentySeventh.set(Calendar.MONTH, Calendar.NOVEMBER);
-		
-		Calendar twentyEighth = Calendar.getInstance();
-		twentyEighth.set(Calendar.DATE, 28);
-		twentyEighth.set(Calendar.YEAR, 2013);
-		twentyEighth.set(Calendar.MONTH, Calendar.NOVEMBER);
-		
-		Calendar twentyThird = Calendar.getInstance();
-		twentyThird.set(Calendar.DATE, 23);
-		twentyThird.set(Calendar.YEAR, 2013);
-		twentyThird.set(Calendar.MONTH, Calendar.NOVEMBER);
-		
-		int utcOffset = twentyThird.get(Calendar.ZONE_OFFSET) + twentyThird.get(Calendar.DST_OFFSET);  
-
-		Session spellingSessionFirst = new Session(twentyFifth.getTimeInMillis() + utcOffset, 2500, spellingLessonName, spellingLessonId, null);
+		Session spellingSessionFirst = new Session(first.getMillis(), 2500, spellingLessonName, spellingLessonId, null);
 		long spellingSessionFirstId = addSession(spellingSessionFirst);
 		
-		Session mathSessionFirst = new Session(twentySixth.getTimeInMillis() + utcOffset, 3000, mathLessonName, mathLessonId, null);
+		Session mathSessionFirst = new Session(first.getMillis(), 3000, mathLessonName, mathLessonId, null);
 		long mathSessionFirstId = addSession(mathSessionFirst);
 		
-		Session spellingSessionSecond = new Session(twentyFifth.getTimeInMillis() + utcOffset, 1200, spellingLessonName, spellingLessonId, null);
+		Session spellingSessionSecond = new Session(second.getMillis(), 1200, spellingLessonName, spellingLessonId, null);
 		long spellingSessionSecondId = addSession(spellingSessionSecond);
 		
-		Session mathSessionSecond = new Session(twentySeventh.getTimeInMillis() + utcOffset, 1900, mathLessonName, mathLessonId, null);
+		Session mathSessionSecond = new Session(third.getMillis(), 1900, mathLessonName, mathLessonId, null);
 		long mathSessionSecondId = addSession(mathSessionSecond);
 		
-		Session spellingVerbSession = new Session(twentySeventh.getTimeInMillis() + utcOffset, 1200, spellVerbs, spellingLesson2Id, null);
+		Session spellingVerbSession = new Session(third.getMillis(), 1200, spellVerbs, spellingLesson2Id, null);
 		long spellingVerbSessionId = addSession(spellingVerbSession);
 		
-		Session spellingVerbSecondSession = new Session(twentyEighth.getTimeInMillis() + utcOffset, 2100, spellVerbs, spellingLesson2Id, null);
+		Session spellingVerbSecondSession = new Session(fourth.getMillis(), 2100, spellVerbs, spellingLesson2Id, null);
 		long spellinVerbSessionSecondId = addSession(spellingVerbSecondSession);
 		
-		Session spellingVerbSessionThird = new Session(twentyThird.getTimeInMillis() + utcOffset, 2100, spellVerbs, spellingLesson2Id, null);
+		Session spellingVerbSessionThird = new Session(fifth.getMillis(), 2100, spellVerbs, spellingLesson2Id, null);
 		long spellingVerbSessionThirdId = addSession(spellingVerbSessionThird);
 		
 		for (long questionId : letterIds) {
