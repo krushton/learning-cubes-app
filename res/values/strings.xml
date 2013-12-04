@@ -41,5 +41,6 @@
     <string name="title_activity_lesson_detail">Lesson Detail</string>
     <string name="title_activity_statistics">Statistics</string>
     <string name="unmapped">[unmapped]</string>
+    <string name="service_name">Learning Service</string>
 
 </resources>

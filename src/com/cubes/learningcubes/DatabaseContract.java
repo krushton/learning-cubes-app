@@ -23,6 +23,8 @@ public final class DatabaseContract {
         public static final String TABLE_NAME = "question";
         public static final String QUESTION_TEXT = "text";
         public static final String QUESTION_ANSWER = "answer";
+        public static final String QUESTION_REMOTE_URL = "remoteurl";
+        public static final String QUESTION_LOCAL_URL = "local";
         public static final String QUESTION_LESSON_ID = "lessonid";
     }
     

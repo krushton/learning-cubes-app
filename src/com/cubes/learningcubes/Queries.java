@@ -60,6 +60,8 @@ public class Queries {
 	    		" (" + QuestionEntry._ID + " INTEGER PRIMARY KEY," +
 	    		QuestionEntry.QUESTION_TEXT + TEXT_TYPE + COMMA_SEP +
 	    		QuestionEntry.QUESTION_ANSWER + TEXT_TYPE + COMMA_SEP +
+	    		QuestionEntry.QUESTION_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
+	    		QuestionEntry.QUESTION_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
 	    		QuestionEntry.QUESTION_LESSON_ID + INT_TYPE + COMMA_SEP +
 	     		getForeignKeyAssociation(QuestionEntry.QUESTION_LESSON_ID, LessonEntry.TABLE_NAME, LessonEntry._ID) + " );";
 	    

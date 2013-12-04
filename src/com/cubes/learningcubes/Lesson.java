@@ -19,15 +19,7 @@ public class Lesson {
 	ArrayList<Question> questions;
 	static int LESSON_ENABLED = 1;
 	static int LESSON_DISABLED = 0;
-	static String CATEGORY_SPELLING = "Spelling";
-	static String CATEGORY_READING = "Reading";
-	static String CATEGORY_SCIENCE = "Science";
-	static String CATEGORY_GEOGRAPHY = "Geography";
-	static String CATEGORY_MATH = "Math";
-	static String CATEGORY_HISTORY = "History";
-	static String CATEGORY_MUSIC = "Music";
-	static String CATEGORY_ART = "Art";
-	static String CATEGORY_GOVERNMENT = "Government";
+	
 	private Random random;
 	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, long id, long remoteId, long blockSetId, ArrayList<Question> questions) {
 		this.lessonName = lessonName;
@@ -56,6 +48,10 @@ public class Lesson {
 
 	public Question getRandomQuestion() {
 		int index = random.nextInt(questions.size());
+		return questions.get(index);
+	}
+	
+	public Question getQuestion(int index) {
 		return questions.get(index);
 	}
 	

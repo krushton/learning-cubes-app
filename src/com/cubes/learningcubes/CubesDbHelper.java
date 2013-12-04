@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 28;
+    public static final int DATABASE_VERSION = 31;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -283,6 +283,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	c.moveToFirst();
     	while(!c.isAfterLast()) {
+    		
         	Question question = getQuestionFromCursor(c);
         	questions.add(question);
         	c.moveToNext();
@@ -294,9 +295,11 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	int colIndex = c.getColumnIndex(QuestionEntry._ID);
     	int id = c.getInt(colIndex);
     	int lessonId = c.getInt(c.getColumnIndex(QuestionEntry.QUESTION_LESSON_ID));
+		String remoteUrl = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_REMOTE_URL));
+		String localUrl = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_LOCAL_URL));
 		String text = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_TEXT));
     	String answer = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_ANSWER));
-    	return new Question(text, answer, id, lessonId);
+    	return new Question(text, answer, id, lessonId, remoteUrl, localUrl);
     }
     
     public Session getSessionById(long rowId) {
@@ -504,6 +507,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(QuestionEntry.QUESTION_TEXT, question.text);
     	values.put(QuestionEntry.QUESTION_ANSWER, question.answer);
     	values.put(QuestionEntry.QUESTION_LESSON_ID, question.lessonId);
+    	values.put(QuestionEntry.QUESTION_LOCAL_URL, question.localUrl);
+    	values.put(QuestionEntry.QUESTION_REMOTE_URL, question.remoteUrl);
     	return db.insert(QuestionEntry.TABLE_NAME, null, values);
     }
     
@@ -560,23 +565,23 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	final long spellingLessonId = addLesson(spellingLesson);
 
     	HashMap<String,String> questions = new HashMap<String, String>();
-    	questions.put("How do you spell cat?", "{c}{a}{t}");
-		questions.put("How do you spell dog?", "{d}{o}{g}");
-		questions.put("How do you spell fish?", "{f}{i}{s}{h}");
-		questions.put("How do you spell frog?", "{f}{r}{o}{g}");
-		questions.put("How do you spell horse?", "{h}{o}{r}{s}{e}");
-		questions.put("How do you spell goat?", "{g}{o}{a}{t}");
-		questions.put("How do you spell pig?", "{p}{i}{g}");
-		questions.put("How do you spell mouse?", "{m}{o}{u}{s}{e}");
-		questions.put("How do you spell rooster?", "{r}{o}{o}{s}{t}{e}{r}");
-		questions.put("How do you spell lizard?", "{l}{i}{z}{a}{r}{d}");
-		questions.put("How do you spell eagle?", "{e}{a}{g}{l}{e}");
-		questions.put("How do you spell antelope?", "{a}{n}{t}{e}{l}{o}{p}{e}");	
+    	questions.put("How do you spell cat?", "c|a|t");
+		questions.put("How do you spell dog?", "d|o|g");
+		questions.put("How do you spell fish?", "f|i|s|h");
+		questions.put("How do you spell frog?", "f|r|o|g");
+		questions.put("How do you spell horse?", "h|o|r|s|e");
+		questions.put("How do you spell goat?", "g|o|a|t");
+		questions.put("How do you spell pig?", "p|i|g");
+		questions.put("How do you spell mouse?", "m|o|u|s|e");
+		questions.put("How do you spell rooster?", "r|o|o|s|t|e|r");
+		questions.put("How do you spell lizard?", "l|i|z|a|r|d");
+		questions.put("How do you spell eagle?", "e|a|g|l|e");
+		questions.put("How do you spell antelope?", "a|n|t|e|l|o|p|e");	
 		
 		ArrayList<Long> letterIds = new ArrayList<Long>();
 
 		for (String key : questions.keySet()) {
-			Question q = new Question(key, questions.get(key), spellingLessonId);
+			Question q = new Question(key, questions.get(key), spellingLessonId, "", "");
 			long id = addQuestion(q);
 			letterIds.add(id);
 		}
@@ -588,26 +593,26 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);
 		
 		HashMap<String,String> spellQuestions = new HashMap<String, String>();
-		spellQuestions.put("How do you spell run?", "{r}{u}{n}");
-		spellQuestions.put("How do you spell play?", "{p}{l}{a}{y}");
-		spellQuestions.put("How do you spell dance?", "{d}{a}{n}{c}{e}");
-		spellQuestions.put("How do you spell sing?", "{s}{i}{n}{g}");
-		spellQuestions.put("How do you spell hug?", "{h}{u}{g}");
-		spellQuestions.put("How do you spell eat?", "{e}{a}{t}");
-		spellQuestions.put("How do you spell sleep?", "{s}{l}{e}{e}{p}");
-		spellQuestions.put("How do you spell read?", "{r}{e}{a}{d}");
-		spellQuestions.put("How do you spell swim?", "{s}{w}{i}{m}");
-		spellQuestions.put("How do you spell wash?", "{w}{a}{s}{h}");
-		spellQuestions.put("How do you spell brush?", "{b}{r}{u}{s}{h}");
-		spellQuestions.put("How do you spell jump?", "{j}{u}{m}{p}");
-		spellQuestions.put("How do you spell walk?", "{w}{a}{k}{k}");
-		spellQuestions.put("How do you spell skip?", "{s}{k}{i}{p}");
-		spellQuestions.put("How do you spell cook?", "{c}{o}{o}{k}");
-		spellQuestions.put("How do you spell drive?", "{d}{r}{i}{v}{e}");
+		spellQuestions.put("How do you spell run?", "r|u|n");
+		spellQuestions.put("How do you spell play?", "p|l|a|y");
+		spellQuestions.put("How do you spell dance?", "d|a|n|c|e");
+		spellQuestions.put("How do you spell sing?", "s|i|n|g");
+		spellQuestions.put("How do you spell hug?", "h|u|g");
+		spellQuestions.put("How do you spell eat?", "e|a|t");
+		spellQuestions.put("How do you spell sleep?", "s|l|e|e|p");
+		spellQuestions.put("How do you spell read?", "r|e|a|d");
+		spellQuestions.put("How do you spell swim?", "s|w|i|m");
+		spellQuestions.put("How do you spell wash?", "w|a|s|h");
+		spellQuestions.put("How do you spell brush?", "b|r|u|s|h");
+		spellQuestions.put("How do you spell jump?", "j|u|m|p");
+		spellQuestions.put("How do you spell walk?", "w|a|k|k");
+		spellQuestions.put("How do you spell skip?", "s|k|i|p");
+		spellQuestions.put("How do you spell cook?", "c|o|o|k");
+		spellQuestions.put("How do you spell drive?", "d|r|i|v|e");
 		ArrayList<Long> spellVerbIds = new ArrayList<Long>();
 		
 		for (String key : spellQuestions.keySet()) {
-			Question q = new Question(key, questions.get(key), spellingLesson2Id);
+			Question q = new Question(key, questions.get(key), spellingLesson2Id, "", "");
 			long id = addQuestion(q);
 			spellVerbIds.add(id);
 		}
@@ -619,27 +624,27 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		final long mathLessonId = addLesson(mathLesson);
 		
 		HashMap<String,String> moreQuestions = new HashMap<String, String>();
-		moreQuestions.put("What is 2 plus 2?", "{4}");
-		moreQuestions.put("What is 6 plus 3?", "{9}");
-		moreQuestions.put("What is 3 plus 1?", "{4}");
-		moreQuestions.put("What is 1 plus 1?", "{2}");
-		moreQuestions.put("What is 5 plus 1?", "{6}");
-		moreQuestions.put("What is 3 plus 2?", "{5}");
-		moreQuestions.put("What is 0 plus 1?", "{1}");
-		moreQuestions.put("What is 1 plus 8?", "{9}");
-		moreQuestions.put("What is 2 plus 4?", "{6}");
-		moreQuestions.put("What is 6 plus 1?", "{7}");
-		moreQuestions.put("What is 3 plus 3?", "{6}");
-		moreQuestions.put("What is 3 plus 6?", "{9}");
-		moreQuestions.put("What is 7 plus 1?", "{8}");
-		moreQuestions.put("What is 4 plus 0?", "{4}");
-		moreQuestions.put("What is 0 plus 0?", "{0}");
-		moreQuestions.put("What is 4 plus 4?", "{8}");
+		moreQuestions.put("What is 2 plus 2?", "4");
+		moreQuestions.put("What is 6 plus 3?", "9");
+		moreQuestions.put("What is 3 plus 1?", "4");
+		moreQuestions.put("What is 1 plus 1?", "2");
+		moreQuestions.put("What is 5 plus 1?", "6");
+		moreQuestions.put("What is 3 plus 2?", "5");
+		moreQuestions.put("What is 0 plus 1?", "1");
+		moreQuestions.put("What is 1 plus 8?", "9");
+		moreQuestions.put("What is 2 plus 4?", "6");
+		moreQuestions.put("What is 6 plus 1?", "7");
+		moreQuestions.put("What is 3 plus 3?", "6");
+		moreQuestions.put("What is 3 plus 6?", "9");
+		moreQuestions.put("What is 7 plus 1?", "8");
+		moreQuestions.put("What is 4 plus 0?", "4");
+		moreQuestions.put("What is 0 plus 0?", "0");
+		moreQuestions.put("What is 4 plus 4?", "8");
 		
 		ArrayList<Long> numberIds = new ArrayList<Long>();
 		
 		for (String key : moreQuestions.keySet()) {
-			Question q = new Question(key, questions.get(key), mathLessonId);
+			Question q = new Question(key, questions.get(key), mathLessonId, "", "");
 			long id = addQuestion(q);
 			numberIds.add(id);
 		}

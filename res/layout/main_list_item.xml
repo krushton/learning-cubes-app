@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
+    android:padding="10dp"
+    android:orientation="vertical" >
+    
+      <ToggleButton
+          android:id="@+id/service_toggle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignParentRight="true"
+          android:text="ToggleButton" />
+
+      <TextView
+          android:id="@+id/action_name"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignBaseline="@+id/service_toggle"
+          android:layout_alignBottom="@+id/service_toggle"
+          android:layout_alignParentLeft="true"
+          android:text="Space Animals"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          android:textSize="22sp" />
+
+</RelativeLayout>

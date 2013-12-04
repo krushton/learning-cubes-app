@@ -70,11 +70,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
         </activity>
-
-        <service
-            android:name="com.cubes.learningcubes.LearningService"
-            android:exported="false" />
-
+        
         <activity
             android:name="com.cubes.learningcubes.GameActivity"
             android:label="@string/title_activity_game"
@@ -123,9 +119,11 @@
         </activity>
 
         <service
-            android:name="com.cubes.learningcubes.BluetoothLeService"
-            android:enabled="true" />
-
+			android:name="LearningService"
+			android:icon="@drawable/ic_launcher"
+			android:label="@string/service_name">
+        </service>
+	
         <activity
             android:name="com.cubes.learningcubes.LessonDetailActivity"
             android:label="@string/title_activity_lesson_detail"
