@@ -3,6 +3,7 @@
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
     android:orientation="vertical" >
 
     <TextView
@@ -11,10 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:paddingBottom="1dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="70dp"
         android:text="Space Animals"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="22sp" />
@@ -25,11 +24,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/lesson_name"
-        android:paddingBottom="12dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="0dp"
+        android:layout_marginRight="70dp"
+        android:layout_marginBottom="5dp"
+        android:lines="1"   
         android:text="A psychadelic adventure in wonderland"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+    
+      <ToggleButton
+        android:id="@+id/lesson_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="5dp"
+        android:text="ToggleButton"
+        android:layout_alignParentRight="true" />
+    
 
 </RelativeLayout>

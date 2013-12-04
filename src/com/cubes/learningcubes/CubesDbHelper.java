@@ -209,6 +209,22 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return getLessonFromCursor(q);
     }
     
+    public void changeEnabledLesson(long rowId) {
+    	getDbIfNecessary();
+    	Cursor q = db.query(LessonEntry.TABLE_NAME, null, null, null, null, null, null);
+    	q.moveToFirst();
+    	while(!q.isAfterLast()) {
+    		long id = q.getLong(q.getColumnIndex(LessonEntry._ID));
+    		ContentValues values = new ContentValues();
+    		if (id == rowId) {
+    			values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_ENABLED);
+    		} else {
+    			values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_DISABLED);
+    		}
+    		db.update(LessonEntry.TABLE_NAME, values, LessonEntry._ID + " = " + id, null);
+    		q.moveToNext();
+    	}
+    }
     public void changeEnabledBlockSet(long rowId) {
     	getDbIfNecessary();
     	Cursor q = db.query(BlockSetEntry.TABLE_NAME, null, null, null, null, null, null);
@@ -224,7 +240,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     		db.update(BlockSetEntry.TABLE_NAME, values, BlockSetEntry._ID + " = " + id, null);
     		q.moveToNext();
     	}
-    	db.close();
     }
     
     public BlockSet getActiveBlockSet() {

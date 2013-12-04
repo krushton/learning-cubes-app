@@ -25,6 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 public class LessonsActivity extends Activity {
 	
@@ -161,6 +162,7 @@ public class LessonsActivity extends Activity {
 		return values;
 	}
 	
+	
 	private class LessonsListAdapter extends ArrayAdapter<Lesson>{
 
 	    private final Context context;
@@ -188,9 +190,35 @@ public class LessonsActivity extends Activity {
 	      TextView description = (TextView)listItem.findViewById(R.id.lesson_description);
 	      description.setText(values[position].description);
 	     
+	      
+          ToggleButton tb = (ToggleButton)listItem.findViewById(R.id.lesson_toggle);
+          tb.setChecked(values[position].enabled);
+
+          tb.setTag(values[position].id);
+          tb.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					long id = (Long)v.getTag();
+					setListItemEnabled(id);
+				}
+  
+          });
+          
 	      return listItem;
 	    
 	    }
+	    public void setListItemEnabled(long id){
+	      	  for (Lesson lesson : values) {
+	      		  if (lesson.id == id) {
+	      			lesson.enabled = true;
+	      			  db.changeEnabledLesson(lesson.id);
+	      		  } else {
+	      			lesson.enabled = false;
+	      		  }
+	      	  }
+	      	  this.notifyDataSetChanged();
+	        }
 	}
 
 }
