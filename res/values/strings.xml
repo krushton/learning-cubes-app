@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">Fuzzy Logic</string>
+	<string name="app_name">Fuzzy Logic</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="empty"></string>
@@ -36,11 +35,13 @@
     <string name="title_activity_browse">Browse Lessons</string>
     <string name="action_mylessons">My Lessons</string>
     <string name="delete_title">Delete</string>
+    <string name="search_app_name">Fuzzy Logic Search</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="title_activity_lesson_detail">Lesson Detail</string>
     <string name="title_activity_statistics">Statistics</string>
     <string name="unmapped">[unmapped]</string>
     <string name="service_name">Learning Service</string>
+    <string name="title_activity_search_results">Search Results</string>
 
 </resources>

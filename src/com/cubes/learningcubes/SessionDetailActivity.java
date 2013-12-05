@@ -113,6 +113,8 @@ public class SessionDetailActivity extends Activity {
             if (!values[position].questionResult) {
             	icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_x));
             }
+            
+            listItem.setClickable(false);
             return listItem;
           
           }

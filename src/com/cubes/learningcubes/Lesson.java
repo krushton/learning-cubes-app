@@ -20,8 +20,12 @@ public class Lesson {
 	static int LESSON_ENABLED = 1;
 	static int LESSON_DISABLED = 0;
 	float price; 
-			
+
 	private Random random;
+	
+	public Lesson() {
+		
+	}
 	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, 
 			long id, long remoteId, long blockSetId, ArrayList<Question> questions, float price) {
 		this.lessonName = lessonName;

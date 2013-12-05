@@ -7,7 +7,8 @@
     <uses-sdk
         android:minSdkVersion="18"
         android:targetSdkVersion="19" />
-	<uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -21,9 +22,9 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:hardwareAccelerated="true" 
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.cubes.learningcubes.MainActivity"
@@ -43,16 +44,16 @@
                 android:value="com.cubes.learningcubes.MainActivity" />
 
             <intent-filter>
-    			<action android:name="android.nfc.action.TECH_DISCOVERED"/>
-			</intent-filter>
-			<meta-data android:name="android.nfc.action.TECH_DISCOVERED"
-    			android:resource="@xml/nfc_filter" />
-			
-            <intent-filter>
-                <action android:name="android.nfc.action.TAG_DISCOVERED"/>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
 
-			
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_filter" />
+
+            <intent-filter>
+                <action android:name="android.nfc.action.TAG_DISCOVERED" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.cubes.learningcubes.SessionsActivity"
@@ -70,7 +71,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
         </activity>
-        
         <activity
             android:name="com.cubes.learningcubes.GameActivity"
             android:label="@string/title_activity_game"
@@ -103,8 +103,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
             <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
+
         </activity>
         <activity
             android:name="com.cubes.learningcubes.BrowseActivity"
@@ -113,17 +114,17 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
+             <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
         </activity>
 
         <service
-			android:name="LearningService"
-			android:icon="@drawable/ic_launcher"
-			android:label="@string/service_name">
+            android:name="com.cubes.learningcubes.LearningService"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/service_name" >
         </service>
-	
+
         <activity
             android:name="com.cubes.learningcubes.LessonDetailActivity"
             android:label="@string/title_activity_lesson_detail"
@@ -131,11 +132,31 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
         </activity>
         <activity
             android:name="com.cubes.learningcubes.StatisticsActivity"
             android:label="@string/title_activity_statistics"
             android:parentActivityName="com.cubes.learningcubes.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cubes.learningcubes.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.cubes.learningcubes.SearchResultsActivity"
+            android:label="@string/title_activity_search_results"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.cubes.learningcubes.MainActivity" >
+            <intent-filter>
+            	<action android:name="android.intent.action.SEARCH" />
+    	    </intent-filter>
+            <meta-data android:name="android.app.searchable"
+                   android:resource="@xml/searchable"/>
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.cubes.learningcubes.MainActivity" />

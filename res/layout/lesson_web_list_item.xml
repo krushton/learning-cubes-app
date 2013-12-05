@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/web_lesson_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="70dp"
+        android:text="Space Animals"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/lesson_description"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/web_lesson_name"
+        android:lines="1"   
+        android:text="A psychadelic adventure in wonderland"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    
+     <TextView
+         android:id="@+id/lesson_price"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_above="@+id/lesson_description"
+         android:layout_alignParentRight="true"
+         android:layout_alignParentTop="true"
+         android:layout_marginTop="9dp"
+         android:lines="1"
+         android:text="3.99"
+         android:textSize="15sp" />
+
+     <ImageView
+         android:id="@+id/star_rating"
+         android:layout_width="70dp"
+         android:layout_height="wrap_content"
+         android:layout_below="@+id/lesson_description"
+         android:layout_marginTop="-5dp"
+         android:scaleType="fitCenter"
+         android:src="@drawable/four_stars" />
+     
+     
+     <TextView
+        android:id="@+id/number_downloads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/star_rating"
+        android:layout_below="@+id/lesson_description"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="4dp"
+        android:lines="1"   
+        android:text="38 downloads"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>
