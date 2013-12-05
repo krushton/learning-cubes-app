@@ -12,6 +12,7 @@ public class Queries {
 
     	private static final String TEXT_TYPE = " TEXT";
     	private static final String INT_TYPE = " INTEGER";
+    	private static final String FLOAT_TYPE = " REAL";
     	private static final String BLOB_TYPE = " BLOB";
     	private static final String COMMA_SEP = ",";
     
@@ -42,6 +43,7 @@ public class Queries {
 	    		LessonEntry.LESSON_DESCRIPTION + TEXT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_REMOTE_ID + INT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_ENABLED + INT_TYPE + COMMA_SEP +
+	    		LessonEntry.PRICE + FLOAT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_NAME + TEXT_TYPE + COMMA_SEP + 
 	    		LessonEntry.LESSON_CATEGORY + TEXT_TYPE + COMMA_SEP + 
 	    		LessonEntry.LESSON_CATEGORY_ID + INT_TYPE + COMMA_SEP + 

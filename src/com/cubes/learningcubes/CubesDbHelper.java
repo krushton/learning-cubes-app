@@ -278,6 +278,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	long setId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_BLOCK_SET_ID));
     	long categoryId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_CATEGORY_ID));
     	int enabled = q.getInt(q.getColumnIndex(LessonEntry.LESSON_ENABLED));
+    	float price = q.getFloat(q.getColumnIndex(LessonEntry.PRICE));
     	Cursor c = db.query(QuestionEntry.TABLE_NAME, null, QuestionEntry.QUESTION_LESSON_ID + " = " + rowId, null, null, null, null);
     	ArrayList<Question> questions = new ArrayList<Question>();
     	
@@ -288,7 +289,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	questions.add(question);
         	c.moveToNext();
     	}
-    	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions);
+    	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions, price);
     }
     
     private Question getQuestionFromCursor(Cursor c) {    	
@@ -446,6 +447,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(LessonEntry.LESSON_CATEGORY_ID, lesson.categoryId);
     	values.put(LessonEntry.LESSON_BLOCK_SET_ID, lesson.blockSetId);
     	values.put(LessonEntry.LESSON_REMOTE_ID, lesson.remoteId);
+    	values.put(LessonEntry.PRICE, lesson.price);
     	if (lesson.enabled) {
     		values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_ENABLED);
     	} else {
@@ -561,7 +563,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	String spellingLessonName = "Spelling animals";
     	Lesson spellingLesson = new Lesson(spellingLessonName, "Practice spelling with animal name words", 
-    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null);
+    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null, 0.0f);
     	final long spellingLessonId = addLesson(spellingLesson);
 
     	HashMap<String,String> questions = new HashMap<String, String>();
@@ -588,7 +590,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
-				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null);
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f);
 		
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);
 		
@@ -620,7 +622,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String mathLessonName = "Basic addition";
 		Lesson mathLesson = new Lesson(mathLessonName, "Practice adding single digit numbers", 
-			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null);
+			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null, 0.0f);
 		final long mathLessonId = addLesson(mathLesson);
 		
 		HashMap<String,String> moreQuestions = new HashMap<String, String>();
