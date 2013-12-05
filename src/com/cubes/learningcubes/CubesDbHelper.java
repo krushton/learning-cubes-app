@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 31;
+    public static final int DATABASE_VERSION = 34;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -251,20 +251,20 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     
     public Block getBlockByTagValue(String rfidTag) {
     	BlockSet blockSet = getActiveBlockSet();
-    	for (Block b : blockSet.set) {
-    		if (b.tagId == rfidTag) {
-    			return b;
-    		}
-    	}
+    	if (rfidTag != null) {
+    		for (Block b : blockSet.set) {
+        		if (b.tagId != null && b.tagId.equals(rfidTag)) {
+        			return b;
+        		}
+        	}
+    	}    	
     	return null;
     }
     
-    public void remapBlock(long id, String newValue) {
-    	Log.d(TAG, "ID : " + id);
-    	Log.d(TAG, "VALUE : " + newValue);
+    public void mapBlock(long id, String tag) {
     	getDbIfNecessary();
     	ContentValues values = new ContentValues();
-    	values.put(BlockEntry.BLOCK_TEXT, newValue);
+    	values.put(BlockEntry.BLOCK_RFID_TAG, tag);
 		db.update(BlockEntry.TABLE_NAME, values, BlockEntry._ID + " = " + id, null);
     }
     

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Learning Blocks</string>
+    <string name="app_name">Fuzzy Logic</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="empty"></string>
-    <string name="logo_description">Learning Blocks Logo</string>
+    <string name="logo_description">Fuzzy Logic Logo</string>
     <string name="title_activity_scan">Quick Scan</string>
     <string name="scan_message">Hold a block against the back of your device to scan it.</string>
     <string name="title_activity_sessions">Session History</string>

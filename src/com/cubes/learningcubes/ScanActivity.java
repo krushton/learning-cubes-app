@@ -15,13 +15,10 @@ import android.nfc.tech.NfcA;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -30,18 +27,21 @@ import android.widget.Toast;
 public class ScanActivity extends Activity {
 	
 	private NfcAdapter mAdapter;
-	private TextView scanResultTextView;
+	private TextView scanResultIdTextView;
+	private TextView scanResultValueTextView;
 	private final String TAG = "ScanActivity";
 	private String setName = "";
 	private long setId = 0;
+	private long blockId = 0;
 	private String mode = "scan";
-	private SharedPreferences prefs;
-	private EditText newValueTextbox;
+	private EditText tagIDEditText;
 	private CubesDbHelper db;
-	private long currentBlockId;
 	PendingIntent pendingIntent;
 	private String[][] techListsArray;
 	private IntentFilter[] intentFiltersArray;
+	private final String MODE_MAPPING = "mapping";
+	private final String MODE_SCAN = "scan";
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,23 +54,26 @@ public class ScanActivity extends Activity {
 		
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
-			if (extras.containsKey("mode") && extras.getString("mode").equals("details")) {
-				mode = "details";
+			if (extras.containsKey("mode") && extras.getString("mode").equals(MODE_MAPPING)) {
+				mode = MODE_MAPPING;
 			}
 		} 
 		RelativeLayout scanLayout = (RelativeLayout)findViewById(R.id.nfc_scan_layout);
 		RelativeLayout editLayout = (RelativeLayout)findViewById(R.id.nfc_edit_layout);
 		
-		if (mode.equals("details")) {
+		if (mode.equals(MODE_MAPPING)) {
 			setId = extras.getLong("setId", 0);
+			blockId = extras.getLong("blockId",0);
+			String blockValue = extras.getString("value");
+			TextView tv = (TextView)findViewById(R.id.message_map_target);
+			tv.setText(blockValue);
 			setName = extras.getString("setName", "");
 			editLayout.setVisibility(View.VISIBLE);
 			scanLayout.setVisibility(View.GONE);
 			getActionBar().setTitle("Edit Block Set");
-			TextView currentValueLabel = (TextView)findViewById(R.id.message_current_value);
-        	currentValueLabel.setText("Current value in set \"" + setName + "\"");
 		} else {
-			scanResultTextView = (TextView)findViewById(R.id.result);
+			scanResultIdTextView = (TextView)findViewById(R.id.result_id);
+			scanResultValueTextView = (TextView)findViewById(R.id.result_value);
 			scanLayout.setVisibility(View.VISIBLE);
 			editLayout.setVisibility(View.GONE);
         	getActionBar().setTitle("Quick Scan");
@@ -133,52 +136,24 @@ public class ScanActivity extends Activity {
 
 	@Override
 	public void onNewIntent(Intent intent) {
-		Log.d(TAG, "NEW INTENT LAUNCHED");
 	    Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        String payload = getTagData(tag);
+        String payload = getTagData(tag).replaceAll(" ", "");
         
-        if (mode.equals("scan")) {
-        	scanResultTextView.setText(payload);
-        } else {
+        if (mode.equals(MODE_SCAN)) {
+        	Block block = db.getBlockByTagValue(payload);
+        	Log.d(TAG, "BLOCK IS NULL? " + String.valueOf(block == null));
+        	if (block != null) {
+        		scanResultValueTextView.setText(block.text);
+        	} else {
+        		scanResultValueTextView.setText(getResources().getString(R.string.unmapped));
+        	}
+        	scanResultIdTextView.setText(payload);
         	
-    		EditText currentValueEditText = (EditText)findViewById(R.id.current_value);
-    		
-    		Block block = db.getBlockByTagValue(payload);
-    		Log.d(TAG, "BLOCK FOUND: " + block.tagId);
-    		String currentTagValue = getResources().getString(R.string.unmapped);
-    		if (block != null) {
-    			currentTagValue = block.text;
-    			currentBlockId = block.id;
-    		} 
-    		currentValueEditText.setText(currentTagValue);
-    		
-    		newValueTextbox = (EditText)findViewById(R.id.remap_value);
-    		final Button saveButton = (Button)findViewById(R.id.save_button);
-    		newValueTextbox.addTextChangedListener(new TextWatcher() {
-
-				@Override
-				public void afterTextChanged(Editable edit) {
-					if (edit.toString().isEmpty()) {
-						saveButton.setEnabled(false);
-					} else {
-						saveButton.setEnabled(true);
-					}
-					
-				}
-
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-					// TODO Auto-generated method stub	
-				}
-
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-					// TODO Auto-generated method stub
-					
-				}
-    			
-    		});
-    		
+        	
+        } else {	
+    		tagIDEditText = (EditText)findViewById(R.id.block_id);
+    		tagIDEditText.setEnabled(false);
+    		tagIDEditText.setText(payload);
         }
         
 	    Log.d(TAG, "TAG PAYLOAD: " + payload);
@@ -201,11 +176,14 @@ public class ScanActivity extends Activity {
 	}
 
 	public void saveMapping(View v) {
-		String boxContents = newValueTextbox.getEditableText().toString();
+		String boxContents = tagIDEditText.getEditableText().toString();
+		Log.d(TAG, boxContents);
 		if (!boxContents.equals("")) {
-			String newVal = newValueTextbox.getText().toString();
-			db.remapBlock(currentBlockId, newVal);
+			db.mapBlock(blockId, boxContents);
 			Toast.makeText(this, "Value saved succesfully.", Toast.LENGTH_SHORT).show();
+			Intent intent = new Intent(ScanActivity.this, BlockSetDetailActivity.class);
+			intent.putExtra("setId", setId);
+			startActivity(intent);
 		}
 	}
 	

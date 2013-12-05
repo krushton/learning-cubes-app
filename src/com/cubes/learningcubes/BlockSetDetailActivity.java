@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,9 +37,31 @@ public class BlockSetDetailActivity extends Activity {
 		
 		BlockSet blockSet = db.getBlockSetById(setId);
 		
-		ListView lv = (ListView)findViewById(R.id.blocks_in_set_list);
-		Block[] values = blockSet.asArray();
+		final ListView lv = (ListView)findViewById(R.id.blocks_in_set_list);
+		final Block[] values = blockSet.asArray();
 		lv.setAdapter(new BlockListAdapter(this, values));
+		lv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Intent intent = new Intent(BlockSetDetailActivity.this, ScanActivity.class);
+				
+				long blockId = (Long)view.getTag();
+				Log.d(TAG, "BLOCK ID: " + blockId);
+				Block block = values[position];
+				
+				Log.d(TAG, "BLOCK IS NULL: " + String.valueOf(block == null));
+				
+				intent.putExtra("blockId", block.id);
+				intent.putExtra("setId", block.blockSetId);
+				intent.putExtra("value", block.text);
+				intent.putExtra("setName","");
+				intent.putExtra("mode", "mapping");
+
+				startActivity(intent);
+			}
+			
+		});
 		
 		
 		TextView blockSetNameText = (TextView)findViewById(R.id.block_set_name_detail);
@@ -54,14 +78,6 @@ public class BlockSetDetailActivity extends Activity {
 	private void setupActionBar() {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setTitle("");
-	}
-	
-	public void editMapping() {
-		Intent intent = new Intent(this, ScanActivity.class);
-		intent.putExtra("setId", setId);
-		intent.putExtra("mode", "details");
-		intent.putExtra("setName", setName);
-		startActivity(intent);
 	}
 
 	@Override
@@ -83,9 +99,6 @@ public class BlockSetDetailActivity extends Activity {
 			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
 			//
 			NavUtils.navigateUpFromSameTask(this);
-			return true;
-		case R.id.action_edit:
-			editMapping();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -122,7 +135,9 @@ public class BlockSetDetailActivity extends Activity {
 	            } else {
 	            	idText.setText(values[position].tagId);
 	            }
-	         
+		        
+	            listItem.setTag(values[position].id);
+	           
 	            return listItem;
 	          
 	          }

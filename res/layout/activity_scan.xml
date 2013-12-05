@@ -17,6 +17,8 @@
         android:layout_alignParentTop="true"
         android:text="@string/scan_message"
         android:textSize="20sp" />
+    
+
 
     <RelativeLayout
         android:id="@+id/nfc_edit_layout"
@@ -25,45 +27,51 @@
         android:layout_below="@+id/message" >
 
         <TextView
-            android:id="@+id/message_current_value"
+        android:id="@+id/msg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:text="Scan the block for"
+        android:textSize="20sp" />
+             
+        <TextView
+            android:id="@+id/message_map_target"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginTop="20dp"
-            android:text="Current value"
-            android:textSize="20sp" />
-
-        <EditText
-            android:id="@+id/current_value"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/message_current_value"
-            android:ems="10"
-            android:enabled="false" />
+            android:layout_gravity="center"
+            android:layout_alignParentTop="false"
+            android:layout_below="@+id/msg"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="30dp"
+            android:text="A"
+            android:textSize="50sp" />
 
         <TextView
-            android:id="@+id/message_remap"
+            android:id="@+id/message_id"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/current_value"
-            android:layout_marginTop="10dp"
-            android:text="@string/remap_message"
+            android:layout_gravity="center"
+            android:layout_alignParentTop="false"
+            android:layout_below="@+id/message_map_target"
+            android:text="Block Tag Value"
+            android:layout_marginBottom="10dp"
             android:textSize="20sp" />
-
+        
         <EditText
-            android:id="@+id/remap_value"
+            android:id="@+id/block_id"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/message_remap"
+            android:layout_below="@+id/message_id"
             android:ems="10" />
 
         <Button
             android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/remap_value"
+            android:layout_below="@+id/block_id"
             android:layout_marginTop="10dp"
-            android:enabled="false"
             android:layout_alignParentRight="true"
             android:onClick="saveMapping"
             android:text="@string/save" />
@@ -74,37 +82,29 @@
         android:id="@+id/nfc_scan_layout"
 		android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/message"
         android:visibility="gone" >
-        
+  
     <TextView
-        android:id="@+id/message"
+        android:id="@+id/result_value"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/scan_message"
-        android:textSize="20sp" />
-
-    <View
-        android:id="@+id/rectangle"
-        android:layout_width="fill_parent"
-        android:layout_height="100dp"
-        android:layout_below="@+id/message"
-        android:layout_marginTop="20dp"
-        android:layout_alignParentLeft="true"
-        android:background="@drawable/rectangle" />
-
-    <TextView
-        android:id="@+id/result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/message"
-        android:layout_marginTop="35dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_alignParentLeft="true"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:layout_alignParentTop="true"   
         android:text="@string/empty"
-        android:textSize="20sp" />
+        android:textSize="60sp" />
+    
+     <TextView
+        android:id="@+id/result_id"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_below="@+id/result_value"
+        android:layout_alignParentLeft="true"      
+        android:text="@string/empty"
+        android:textSize="40sp" />
+    
         
     </RelativeLayout>
 
