@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 35;
+    public static final int DATABASE_VERSION = 36;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -588,9 +588,33 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 			letterIds.add(id);
 		}
 		
+		String testLessonName = "Demo Lesson";
+		Lesson stupidTestLesson = new Lesson(testLessonName, "Spelling words that use A, B, O, T, C",
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f);
+		
+		final long testLessonId = addLesson(stupidTestLesson);
+		HashMap<String,String> testQuestions = new HashMap<String, String>();
+		
+		testQuestions.put("How do you spell cat?", "c|a|t");
+		testQuestions.put("How do you spell tab?", "t|a|b");
+		testQuestions.put("How do you spell bat?", "b|a|t");
+		testQuestions.put("How do you spell cab?", "c|a|b");
+		testQuestions.put("How do you spell act?", "a|c|t");	
+		testQuestions.put("How do you spell at?", "a|t");
+		testQuestions.put("How do you spell tat?", "t|a|t");
+		
+		ArrayList<Long> testQuestionIds = new ArrayList<Long>();
+		
+		for (String key : testQuestions.keySet()) {
+			Question q = new Question(key, questions.get(key), testLessonId, "", "");
+			long id = addQuestion(q);
+			testQuestionIds.add(id);
+		}
+		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
 				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f);
+		
 		
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);
 		
@@ -656,7 +680,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		DateTime third = DateTime.now().minusDays(9);
 		DateTime fourth = DateTime.now().minusDays(6);
 		DateTime fifth = DateTime.now().minusDays(2);
-		
+		DateTime sixth = DateTime.now().minusDays(1);
 		Session spellingSessionFirst = new Session(first.getMillis(), 2500, spellingLessonName, spellingLessonId, null);
 		long spellingSessionFirstId = addSession(spellingSessionFirst);
 		
@@ -677,6 +701,15 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		Session spellingVerbSessionThird = new Session(fifth.getMillis(), 2100, spellVerbs, spellingLesson2Id, null);
 		long spellingVerbSessionThirdId = addSession(spellingVerbSessionThird);
+		
+		Session testSession = new Session(sixth.getMillis(), 1000, testLessonName, testLessonId, null);
+		long testSessionId = addSession(testSession);
+		
+		for (long questionId : testQuestionIds) {
+			String text = getQuestionById(questionId).text;
+			LogItem log = new LogItem(testSessionId, questionId, testLessonId, text, getRandomBoolean());
+			addSessionLog(log);
+		}
 		
 		for (long questionId : letterIds) {
 			String text = getQuestionById(questionId).text;

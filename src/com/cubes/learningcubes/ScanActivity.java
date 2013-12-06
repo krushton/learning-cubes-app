@@ -178,13 +178,13 @@ public class ScanActivity extends Activity {
 	public void saveMapping(View v) {
 		String boxContents = tagIDEditText.getEditableText().toString();
 		Log.d(TAG, boxContents);
-		if (!boxContents.equals("")) {
+		if (!(boxContents == null) && !boxContents.isEmpty()) {
 			db.mapBlock(blockId, boxContents);
 			Toast.makeText(this, "Value saved succesfully.", Toast.LENGTH_SHORT).show();
 			Intent intent = new Intent(ScanActivity.this, BlockSetDetailActivity.class);
 			intent.putExtra("setId", setId);
 			startActivity(intent);
-		}
+		} 
 	}
 	
 	private String getTagData(Parcelable p) {

@@ -24,6 +24,7 @@
 	
 	<style name="RobotoButtonStyle" parent="android:Widget.Holo.Button">
 	    <item name="android:fontFamily">sans-serif-light</item>
+	    <item name="android:textColor">@color/black</item>
 	</style>
 
 </resources>
