@@ -1,5 +1,8 @@
 package com.cubes.learningcubes;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -26,13 +29,15 @@ public class MainActivity extends Activity {
 	private boolean serviceIsRunning = false;
 	private final String SERVICE_KEY = "serviceIsRunning";
 	private SharedPreferences prefs;
+	private CheckServiceRunningTask task;
+	private ToggleButton serviceToggleButton;
 	private final String TAG = "MainActivity";
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+               
         prefs = getPreferences(Activity.MODE_PRIVATE);
         if (prefs.contains("serviceRunning")) {
         	serviceIsRunning = prefs.getBoolean(SERVICE_KEY, false);
@@ -88,6 +93,23 @@ public class MainActivity extends Activity {
         return true;
     }
     
+    private class CheckServiceRunningTask extends TimerTask {
+
+		@Override
+		public void run() {
+			if (prefs.contains("serviceRunning")) {
+				boolean running = prefs.getBoolean("serviceRunning", false);
+				serviceToggleButton.setActivated(running); 
+				if (!running) {
+					task.cancel();
+				
+				}
+			}
+			
+		}
+    	
+    }
+    
     private class MainListAdapter extends ArrayAdapter<String>{
 
 	    private final Context context;
@@ -119,6 +141,8 @@ public class MainActivity extends Activity {
 
 					@Override
 					public void onClick(View v) {
+						
+						serviceToggleButton = (ToggleButton)v;
 						Intent intent = new Intent(MainActivity.this, LearningService.class);
 						final SharedPreferences.Editor editor = prefs.edit();
 						
@@ -140,9 +164,11 @@ public class MainActivity extends Activity {
 						            startActivityForResult(enableBluetooth, 1);
 							    } else {
 
-								    Log.d(TAG, "STARTING SERVICE");
 									editor.putBoolean(SERVICE_KEY, true);
 									serviceIsRunning = true;
+									Timer timer = new Timer();
+									task = new CheckServiceRunningTask();
+									timer.schedule(task, 1000, 1000);
 									startService(intent);
 							    }
 							    

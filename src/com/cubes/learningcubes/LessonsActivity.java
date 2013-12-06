@@ -90,11 +90,11 @@ public class LessonsActivity extends Activity {
 					long arg3) {
 				long id = (Long)v.getTag();
 				Intent i = new Intent(LessonsActivity.this, LessonDetailActivity.class);
-				i.putExtra("lessonId", id);
+				i.putExtra("localId", id);
 				startActivity(i);
 			}
 
-      });
+		});
       
         lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 

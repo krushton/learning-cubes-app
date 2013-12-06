@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -29,12 +30,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class SearchResultsActivity extends Activity {
 
@@ -54,6 +57,18 @@ public class SearchResultsActivity extends Activity {
 		
 		adapter = new SearchResultsListAdapter(this, lessons);
 		lv.setAdapter(adapter);
+		lv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
+					long arg3) {
+				long id = (Long)v.getTag();
+				Intent i = new Intent(SearchResultsActivity.this, LessonDetailActivity.class);
+				i.putExtra("remoteId", id);
+				startActivity(i);
+			}
+
+		});
 		random = new Random();
 		handleIntent(getIntent());
 		
@@ -149,8 +164,12 @@ public class SearchResultsActivity extends Activity {
                 	Lesson lesson = new Lesson();
                 	JSONObject object = itemsList.getJSONObject(i);
                 	lesson.lessonName = object.getString("title");
-                	lesson.description = "Placeholder description until Fred gets this ready";
-                //	lesson.description = object.getString("description");
+                	lesson.description = object.getString("description");
+                	String url =  object.getString("url");
+                	String[] urlPieces = url.split(Pattern.quote("/"));
+                	//hack, we're not sending the ID currently so just stripping it out of the url
+                	Long id = Long.valueOf(urlPieces[urlPieces.length-1].replace(".json", ""));
+                	lesson.remoteId = id;
                 	String price = object.getString("price");
                 	if (price.isEmpty()) {
                 		lesson.price = 0.0f;
@@ -254,6 +273,8 @@ public class SearchResultsActivity extends Activity {
 
 	      TextView lessonPrice = (TextView)listItem.findViewById(R.id.lesson_price);
 	      lessonPrice.setText(values.get(position).getPrice());
+	      
+	      listItem.setTag(lesson.remoteId);
 	      
 	      int starValue = random.nextInt(5);
 	      int resId = 0;

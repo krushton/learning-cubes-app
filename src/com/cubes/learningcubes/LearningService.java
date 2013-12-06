@@ -12,19 +12,21 @@ import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class LearningService extends Service implements TextToSpeech.OnInitListener{
 
@@ -34,10 +36,10 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	private final String TAG = "Learning Service";
 	private final String BLUETOOTH_SPEAKER_ADDRESS = "00:06:66:52:08:B5";
 
-	
 	private boolean waitingForAnswer = false;
 	private int questionIndex = 0;
 	private int numberCorrect = 0;
+	private int lastKnownOutputLength = 0;
 	
 	private QuestionTask questionTask;
 	private Question currentQuestion;
@@ -124,7 +126,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			tts.stop();
             tts.shutdown();
         }
-       questionTask.cancel();
        //save final session time to the database(?)
     }
 	
@@ -139,9 +140,12 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		speak("Lesson complete.");
 		pause(1000);
 		speak("You answered " + numberCorrect + " of " + lesson.questions.size() + " questions correctly");
-		pause(1000);	
-		stopSelf();
+		pause(1000);
+		Timer timer = new Timer();
+		CheckIfDoneTask task = new CheckIfDoneTask();
+		timer.schedule(task, 1000, 1000);
 	}
+	
 	
 	
 	 @Override
@@ -186,6 +190,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		 mReadThread = new ReadInput();
 	 }
 	 
+	 
 	 private class QuestionTask extends TimerTask {
 		 public void run() { 
 			if (!waitingForAnswer) {
@@ -198,11 +203,21 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				for (String item : output) {
 					Log.d(TAG, "output item: " +item);
 				}
-				
-				String[] correct = currentQuestion.answer.split(Pattern.quote("|"));
-				
 				Log.d(TAG, "OUTPUT LENGTH IS " + output.size());
-				if (output.size() == correct.length) {
+				
+				if (output.size() > lastKnownOutputLength) {
+					Log.d(TAG, "We see a new block");
+					Block block = db.getBlockByTagValue(output.get(output.size()-1));
+					if (block != null) {
+						speak(block.text);
+					} else {
+						speak("I do not recognize that block");
+					}
+					lastKnownOutputLength++;
+					
+				}
+				
+				if (output.size() == currentQuestionTags.length) {
 					
 					boolean correctAnswer = true;
 					for (int i = 0; i < output.size(); i++) {
@@ -220,9 +235,11 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 						speak("Sorry, that is not correct");
 					}
 					output.clear();
+					lastKnownOutputLength = 0;
 					if (lesson.questions.size() == questionIndex+1) {
-						this.cancel();
+						Log.w(TAG, "LESSON IS OVER");
 						sayEndingLines();
+						
 					} else {
 						questionIndex++;
 						currentQuestion = lesson.questions.get(questionIndex);
@@ -236,6 +253,24 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		 }
 	 }
 	 
+	 private void endGame() {
+		 Context ctx = getApplicationContext();
+		 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+		 
+         if (prefs.contains("serviceRunning")) {
+        	 prefs.edit().putBoolean("serviceRunning", false);
+         }
+         
+		 if (mBTSocket != null && bluetoothReady) {
+				new DisConnectBT().execute();
+	        }
+	       if (tts != null) {
+				tts.stop();
+	            tts.shutdown();
+	        }
+		 stopSelf();
+	 }
+	 
 	 
 	 
 	 private class CheckIfReadyTask extends TimerTask {
@@ -246,6 +281,18 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			 }
 		 }
 	 }
+	 
+	 private class CheckIfDoneTask extends TimerTask {
+		 public void run() {
+			 if (!tts.isSpeaking()) {
+				 endGame();
+				 this.cancel();
+			 }
+		 }
+	 }
+	 
+
+	
 	
 	 
 	 private class ReadInput implements Runnable {

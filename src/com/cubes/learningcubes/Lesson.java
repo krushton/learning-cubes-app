@@ -24,8 +24,9 @@ public class Lesson {
 	private Random random;
 	
 	public Lesson() {
-		
+		questions = new ArrayList<Question>();
 	}
+	
 	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, 
 			long id, long remoteId, long blockSetId, ArrayList<Question> questions, float price) {
 		this.lessonName = lessonName;

@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 42;
+    public static final int DATABASE_VERSION = 43;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -251,7 +251,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	BlockSet blockSet = getActiveBlockSet();
     	if (rfidTag != null) {
     		for (Block b : blockSet.set) {
-        		if (b.tagId != null && b.tagId.equals(rfidTag)) {
+        		if (b.tagId != null && isSimilarEnough(rfidTag, b.tagId)) {
         			return b;
         		}
         	}
@@ -267,7 +267,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return tags;
     }
     public String getTagForMappedValue(String value) {
-    	Log.d(TAG, "CHECKIN' TAG FOR MAPPED VALUE " + value);
     	BlockSet blockSet = getActiveBlockSet();
     	if (value != null) {
     		for (Block b : blockSet.set) {
@@ -617,12 +616,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		testQuestions.put("How do you spell cat?", "c|a|t");
 		testQuestions.put("How do you spell tab?", "t|a|b");
 		testQuestions.put("How do you spell bat?", "b|a|t");
-		testQuestions.put("How do you spell cab?", "c|a|b");
-		testQuestions.put("How do you spell act?", "a|c|t");	
-		testQuestions.put("How do you spell at?", "a|t");
 		
 		ArrayList<Long> testQuestionIds = new ArrayList<Long>();
-		Log.d(TAG, "WE ARE HERE");
 		for (String key : testQuestions.keySet()) {
 			Question q = new Question(key, testQuestions.get(key), testLessonId, "", "");
 			Log.d(TAG, q.answer + " bananaa");
@@ -774,5 +769,22 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 			return false;
 		}
 		return true;
+    }
+    
+    private boolean isSimilarEnough(String testId, String correctId) {
+
+		 testId = testId.toLowerCase().trim();
+		 correctId = correctId.toLowerCase();
+		 int commonChars = 0;
+		 for (int i = 0; i < testId.length(); i++) {
+			 if (correctId.contains(""+testId.charAt(i))) {
+				 commonChars++;
+			 }
+		 }
+		 float percent = (float)commonChars / (float)correctId.length();
+		 if (percent > .8) {
+			 return true;
+		 } 
+		 return false;
     }
 }
