@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 36;
+    public static final int DATABASE_VERSION = 42;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -69,8 +69,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     }
     
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
         db.execSQL(Queries.DELETE_LOG_TABLE);
         db.execSQL(Queries.DELETE_QUESTION_TABLE);
         db.execSQL(Queries.DELETE_SESSION_TABLE);
@@ -258,6 +256,27 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         		}
         	}
     	}    	
+    	return null;
+    }
+    
+    public String[] getTagsForValues(String[] values) {
+    	String[] tags = new String[values.length];
+    	for (int i = 0; i < values.length; i++) {
+    		tags[i] = getTagForMappedValue(values[i]);
+    	}
+    	return tags;
+    }
+    public String getTagForMappedValue(String value) {
+    	Log.d(TAG, "CHECKIN' TAG FOR MAPPED VALUE " + value);
+    	BlockSet blockSet = getActiveBlockSet();
+    	if (value != null) {
+    		for (Block b : blockSet.set) {
+        		if (b.text !=null && b.text.equalsIgnoreCase(value)) {
+        			return b.tagId;
+        		}
+        	}
+    	}
+    	Log.d(TAG, "Returnin' null");
     	return null;
     }
     
@@ -601,12 +620,12 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		testQuestions.put("How do you spell cab?", "c|a|b");
 		testQuestions.put("How do you spell act?", "a|c|t");	
 		testQuestions.put("How do you spell at?", "a|t");
-		testQuestions.put("How do you spell tat?", "t|a|t");
 		
 		ArrayList<Long> testQuestionIds = new ArrayList<Long>();
-		
+		Log.d(TAG, "WE ARE HERE");
 		for (String key : testQuestions.keySet()) {
-			Question q = new Question(key, questions.get(key), testLessonId, "", "");
+			Question q = new Question(key, testQuestions.get(key), testLessonId, "", "");
+			Log.d(TAG, q.answer + " bananaa");
 			long id = addQuestion(q);
 			testQuestionIds.add(id);
 		}

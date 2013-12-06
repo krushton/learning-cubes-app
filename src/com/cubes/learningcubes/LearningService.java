@@ -8,6 +8,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.regex.Pattern;
+
+import org.joda.time.DateTime;
 
 import android.app.ProgressDialog;
 import android.app.Service;
@@ -31,24 +34,27 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	private final String TAG = "Learning Service";
 	private final String BLUETOOTH_SPEAKER_ADDRESS = "00:06:66:52:08:B5";
 
-	private boolean textToSpeechReady = false;
+	
 	private boolean waitingForAnswer = false;
 	private int questionIndex = 0;
-	private TimerTask timerTask;
-	private Question lastQuestion;
+	private int numberCorrect = 0;
+	
+	private QuestionTask questionTask;
+	private Question currentQuestion;
+	private String[] currentQuestionTags;
 	private ArrayList<String> output = new ArrayList<String>();
 	
 	private UUID mDeviceUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // Standard SPP UUID
 	 
 	private BluetoothSocket mBTSocket;
 	private ReadInput mReadThread = null;
-	private ToggleButton mToggleButton;
 
 	private boolean mIsUserInitiatedDisconnect = false;
-	private boolean mIsBluetoothConnected = false;
-	private boolean mIsGameRunning = true;
+	private boolean bluetoothReady = false;
+	private boolean textToSpeechReady = false;
 
 	private BluetoothDevice mDevice;
+	private long lastAddTime;
 	
 	private BluetoothAdapter mBTAdapter;
 
@@ -70,7 +76,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
     	db = CubesDbHelper.getInstance(this);
 		lesson = db.getActiveLesson();
 		tts = new TextToSpeech(this, this);
-		
 		tts.setPitch(.8f);
 		tts.setSpeechRate(.6f);
 		mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -94,9 +99,14 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
         	Log.d(TAG, "Device is null");
         	stopSelf();
         }
+        
+        CheckIfReadyTask task = new CheckIfReadyTask();
+        Timer timer = new Timer();
+        timer.schedule(task, 0, 3000);
     }
     
     private void speak(String text) {
+    	Log.d(TAG, "TEXT TO SPEECH: " + text);
     	tts.speak(text, TextToSpeech.QUEUE_ADD, null);
     }
    
@@ -104,99 +114,139 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
     	tts.playSilence(duration, TextToSpeech.QUEUE_ADD, null);
     }
     
-    private boolean checkAnswer(String[] correctAnswer) {
-    	Log.d(TAG, correctAnswer+"");
-    	Log.d(TAG, output+"");
-    	for (int i = 0; i < correctAnswer.length; i++) {
-    		if (correctAnswer[i] != output.get(i)) {
-    			return false;
-    		}
-    	}
-    	return true;
-    }
-    
 	@Override
 	public void onDestroy() {
         super.onDestroy();
-        if (mBTSocket != null && mIsBluetoothConnected) {
+        if (mBTSocket != null && bluetoothReady) {
 			new DisConnectBT().execute();
         }
        if (tts != null) {
 			tts.stop();
             tts.shutdown();
         }
-       timerTask.cancel();
+       questionTask.cancel();
        //save final session time to the database(?)
     }
 	
 	public void sayStartupLines() {
 		//start startup sequence
-		pause(1000);
-		speak("Let's practice our " + lesson.category);
-		pause(1000);
 		speak("The next lesson is " + lesson.lessonName);
-		pause(1000);
-		lastQuestion = lesson.getQuestion(0);
-			
+		pause(1000);		
 	}
+	
+	public void sayEndingLines() {
+		//start startup sequence
+		speak("Lesson complete.");
+		pause(1000);
+		speak("You answered " + numberCorrect + " of " + lesson.questions.size() + " questions correctly");
+		pause(1000);	
+		stopSelf();
+	}
+	
+	
 	 @Override
      public void onInit(int status) {
  
         if (status == TextToSpeech.SUCCESS) {
-            int result = tts.setLanguage(Locale.US);
-            
+            int result = tts.setLanguage(Locale.US);          
             textToSpeechReady = true;
-            sayStartupLines();
-            timerTask = new QuestionTask();
-    		new Timer().schedule(timerTask, 1000);
-    		
         }  else {
         	textToSpeechReady = false;
         }
      }
-	
-	 private class QuestionTask extends TimerTask {
-		    @Override
- 			public void run() {
-		    	
- 				if (textToSpeechReady) {
+	 
+	 private boolean isSimilarEnough(String testId, String correctId) {
 
- 					if (waitingForAnswer) {
- 						String[] pieces = lastQuestion.answer.split("|");
- 						if (pieces.length == output.size()) {
- 							boolean correct = checkAnswer(pieces);
- 							if (correct) {
- 								speak("Great job!");
- 							} else {
- 								speak("Sorry, that was not correct");
- 							}
- 							waitingForAnswer = false;
- 						}
- 						
- 					} else {
- 						
- 						Question q = lesson.getQuestion(questionIndex);
- 						lastQuestion = q;
- 						speak(q.text);
- 						
- 						if (questionIndex == lesson.questions.size()){
- 							tts.playSilence(1000, TextToSpeech.QUEUE_FLUSH, null);
- 							speak("You have finished the lesson. Great job!");
- 							stopSelf();
- 						} else {
- 							waitingForAnswer = true;
- 							mReadThread = new ReadInput(); // Kick off input reader
- 						}
- 						
- 						
- 					}
- 					
- 				//}
- 				
- 			}
-		    
-		    }	
+		 testId = testId.toLowerCase().trim();
+		 correctId = correctId.toLowerCase();
+		 Log.d(TAG, "Now comparing: "+ testId + " and " + correctId);
+		 int commonChars = 0;
+		 for (int i = 0; i < testId.length(); i++) {
+			 if (correctId.contains(""+testId.charAt(i))) {
+				 commonChars++;
+			 }
+		 }
+		 float percent = (float)commonChars / (float)correctId.length();
+		 Log.d(TAG, "Common characters percentage: " + percent );
+		 if (percent > .8) {
+			 return true;
+		 } 
+		 return false;
 	 }
+	 
+	 private void startGame() {
+		 Log.d(TAG, "STARTING GAME");
+		 Log.d(TAG, "FIRST QUESTION IS " + lesson.questions.get(questionIndex).text);
+		 sayStartupLines();
+		 currentQuestion = lesson.questions.get(questionIndex);
+		 currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(Pattern.quote("|")));
+		 questionTask = new QuestionTask();
+		 Timer timer = new Timer();
+		 timer.schedule(questionTask, 2000, 2000);
+		 mReadThread = new ReadInput();
+	 }
+	 
+	 private class QuestionTask extends TimerTask {
+		 public void run() { 
+			if (!waitingForAnswer) {
+				speak(currentQuestion.text);
+				waitingForAnswer = true;
+				
+			} else {
+				Log.d(TAG, "Waiting for answer...");
+				
+				for (String item : output) {
+					Log.d(TAG, "output item: " +item);
+				}
+				
+				String[] correct = currentQuestion.answer.split(Pattern.quote("|"));
+				
+				Log.d(TAG, "OUTPUT LENGTH IS " + output.size());
+				if (output.size() == correct.length) {
+					
+					boolean correctAnswer = true;
+					for (int i = 0; i < output.size(); i++) {
+						String tag = output.get(i);
+						String tagLookingFor = currentQuestionTags[i];
+						if (!isSimilarEnough(tag, tagLookingFor)) {
+							correctAnswer = false;
+						}
+					}
+					Log.d(TAG, "Correct answer? " + correctAnswer);
+					if (correctAnswer) {
+						speak("Great job!");
+						numberCorrect++;
+					} else {
+						speak("Sorry, that is not correct");
+					}
+					output.clear();
+					if (lesson.questions.size() == questionIndex+1) {
+						this.cancel();
+						sayEndingLines();
+					} else {
+						questionIndex++;
+						currentQuestion = lesson.questions.get(questionIndex);
+						currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(Pattern.quote("|")));
+						waitingForAnswer= false;
+					}
+					
+				}
+				
+			}
+		 }
+	 }
+	 
+	 
+	 
+	 private class CheckIfReadyTask extends TimerTask {
+		 public void run() {
+			 if (textToSpeechReady && bluetoothReady) {
+				 startGame();
+				 this.cancel();
+			 }
+		 }
+	 }
+	
 	 
 	 private class ReadInput implements Runnable {
 
@@ -229,12 +279,14 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 							for (i = 0; i < buffer.length && buffer[i] != 0; i++) {
 							}
 							final String strInput = new String(buffer, 0, i);
-								String fixed = strInput.replace("[", "");
-								if (fixed.length() > 0) {
-									String result = fixed.substring(0, 7);
-									output.add(result);
+								if (DateTime.now().getMillis() - lastAddTime < 1500) {
+									int length = output.size();
+									output.set(length-1, output.get(length-1) + strInput);
+								} else {
+									output.add(strInput);
+									lastAddTime = DateTime.now().getMillis();
 								}
-								this.stop();
+								
 							}
 
 						}
@@ -259,7 +311,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			protected Void doInBackground(Void... devices) {
 
 				try {
-					if (mBTSocket == null || !mIsBluetoothConnected) {
+					if (mBTSocket == null || !bluetoothReady) {
 						mBTSocket = mDevice.createInsecureRfcommSocketToServiceRecord(mDeviceUUID);
 						BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 						mBTSocket.connect();
@@ -281,7 +333,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 					stopSelf();
 				} else {
 				//	Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
-					mIsBluetoothConnected = true;
+					bluetoothReady = true;
 				}
 			}
 
@@ -318,7 +370,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			@Override
 			protected void onPostExecute(Void result) {
 				super.onPostExecute(result);
-				mIsBluetoothConnected = false;
+				bluetoothReady = false;
 				if (mIsUserInitiatedDisconnect) {
 					stopSelf();
 				}
