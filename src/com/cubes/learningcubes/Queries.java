@@ -46,7 +46,17 @@ public class Queries {
 	    		LessonEntry.PRICE + FLOAT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_NAME + TEXT_TYPE + COMMA_SEP + 
 	    		LessonEntry.LESSON_CATEGORY + TEXT_TYPE + COMMA_SEP + 
-	    		LessonEntry.LESSON_CATEGORY_ID + INT_TYPE + COMMA_SEP + 
+	    		LessonEntry.LESSON_CATEGORY_ID + INT_TYPE + COMMA_SEP +
+	    		LessonEntry.LESSON_RATING + INT_TYPE + COMMA_SEP +
+	    		LessonEntry.LESSON_AUTHOR + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.START_SOUND_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.START_SOUND_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.END_SOUND_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.END_SOUND_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.CORRECT_SOUND_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.CORRECT_SOUND_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.INCORRECT_SOUND_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
+	    		LessonEntry.INCORRECT_SOUND_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
 	    		getForeignKeyAssociation(LessonEntry.LESSON_CATEGORY_ID, CategoryEntry.TABLE_NAME, CategoryEntry._ID) +
 	    		getForeignKeyAssociation(LessonEntry.LESSON_BLOCK_SET_ID, BlockSetEntry.TABLE_NAME, BlockSetEntry._ID) + " );";   
 	    

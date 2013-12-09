@@ -20,7 +20,17 @@ public class Lesson {
 	static int LESSON_ENABLED = 1;
 	static int LESSON_DISABLED = 0;
 	float price; 
-
+	int rating;
+	String author;
+	String startSoundRemoteUrl;
+	String startSoundLocalUrl;
+	String endSoundLocalUrl;
+	String endSoundRemoteUrl;
+	String correctSoundLocalUrl;
+	String correctSoundRemoteUrl;
+	String incorrectSoundRemoteUrl;
+	String incorrectSoundLocalUrl;
+	
 	private Random random;
 	
 	public Lesson() {
@@ -28,7 +38,13 @@ public class Lesson {
 	}
 	
 	public Lesson(String lessonName, String description, String category, long categoryId, int enableInt, 
-			long id, long remoteId, long blockSetId, ArrayList<Question> questions, float price) {
+			long id, long remoteId, long blockSetId, ArrayList<Question> questions, float price, 
+			int rating, String author, 
+			String startSoundRemoteUrl, String startSoundLocalUrl,
+			String endSoundRemoteUrl, String endSoundLocalUrl,
+			String correctSoundRemoteUrl, String correctSoundLocalUrl,
+			String incorrectSoundRemoteUrl, String incorrectSoundLocalUrl
+			) {
 		this.lessonName = lessonName;
 		this.category = category;
 		this.categoryId = categoryId;
@@ -37,6 +53,17 @@ public class Lesson {
 		this.description = description;
 		this.price = price;
 		this.blockSetId = blockSetId;
+		this.rating = rating;
+		this.author = author;
+		this.startSoundRemoteUrl = startSoundRemoteUrl;
+		this.startSoundLocalUrl = startSoundLocalUrl;
+		this.endSoundLocalUrl = endSoundLocalUrl;
+		this.endSoundRemoteUrl = endSoundRemoteUrl;
+		this.correctSoundRemoteUrl = correctSoundRemoteUrl;
+		this.correctSoundLocalUrl = correctSoundLocalUrl;
+		this.incorrectSoundRemoteUrl = incorrectSoundRemoteUrl;
+		this.incorrectSoundLocalUrl = incorrectSoundLocalUrl;
+		
 		if (questions == null) {
 			this.questions = new ArrayList<Question>();
 		} else {
@@ -52,8 +79,12 @@ public class Lesson {
 	
 	public Lesson(String lessonName, String description, String category, 
 			long categoryId, int enableInt, long remoteId, long blockSetId, 
-			ArrayList<Question> questions, float price) {
-		this(lessonName, description, category, categoryId, enableInt, 0, remoteId, blockSetId, null, price);
+			ArrayList<Question> questions, float price,
+			int rating, String author) {
+		this(lessonName, description, category, 
+			 categoryId, enableInt, 0, remoteId, blockSetId, 
+			 null, price, rating, author,
+			 "", "", "", "", "", "", "", "");
 	}
 
 	public Question getRandomQuestion() {
