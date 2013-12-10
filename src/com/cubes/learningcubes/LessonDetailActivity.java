@@ -278,7 +278,7 @@ public class LessonDetailActivity extends Activity {
 		 protected JSONObject doInBackground(Long... args) {
 	        	
 	            Long id = args[0];
-	            String url = "http://lessonbuilder.herokuapp.com/lessons/" + id + ".json";
+	            String url = "http://fuzzylogic.herokuapp.com/lessons/" + id + ".json";
 	            Log.d(TAG, "URL: " + url);
 	            HttpResponse response;
 	            HttpClient httpclient = new DefaultHttpClient();
