@@ -188,7 +188,7 @@ public class SearchResultsActivity extends Activity {
         protected JSONArray doInBackground(String... args) {
         	
             String query = args[0];
-            String url = "http://lessonbuilder.herokuapp.com/lessons.json?q=" + query;
+            String url = "http://fuzzylogic.herokuapp.com/lessons.json?q=" + query;
                 
             HttpResponse response;
             HttpClient httpclient = new DefaultHttpClient();
