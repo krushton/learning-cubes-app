@@ -290,11 +290,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			 }
 		 }
 	 }
-	 
-
-	
-	
-	 
+	 	 
 	 private class ReadInput implements Runnable {
 
 			private boolean bStop = false;
