@@ -22,6 +22,9 @@ import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class LessonDetailActivity extends Activity {
@@ -30,6 +33,7 @@ public class LessonDetailActivity extends Activity {
 	private Lesson lesson;
 	private Boolean alreadyDownloaded = false;
 	private String TAG = "Search Results Activity";
+	private Button downloadButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,16 @@ public class LessonDetailActivity extends Activity {
 		Bundle extras = getIntent().getExtras();
 		long localId = 0;
 		long remoteId = 0;
+		downloadButton = (Button)findViewById(R.id.download_lesson_button);
+		downloadButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View button) {
+				// TODO Auto-generated method stub
+				//AsyncTask
+			}
+			
+		});
 		if (extras != null) {
 			localId = extras.getLong("localId");
 			remoteId = extras.getLong("remoteId");
