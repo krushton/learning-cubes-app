@@ -17,7 +17,18 @@ public final class DatabaseContract {
         public static final String LESSON_ENABLED = "lessonenabled";
         public static final String LESSON_BLOCK_SET_ID = "blocksetid";
         public static final String LESSON_CATEGORY = "lessoncategory";
+        public static final String LESSON_RATING = "rating";
+        public static final String LESSON_AUTHOR = "author";
+        public static final String START_SOUND_REMOTE_URL = "startsoundremoteurl";
+        public static final String START_SOUND_LOCAL_URL = "startsoundlocalurl";
+        public static final String END_SOUND_REMOTE_URL = "endsoundremoteurl";
+        public static final String END_SOUND_LOCAL_URL = "endsoundlocalurl";
+        public static final String CORRECT_SOUND_REMOTE_URL = "correctsoundremoteurl";
+        public static final String CORRECT_SOUND_LOCAL_URL = "correctsoundlocalurl";
+        public static final String INCORRECT_SOUND_REMOTE_URL = "incorrectsoundremoteurl";
+        public static final String INCORRECT_SOUND_LOCAL_URL = "incorrectsoundlocalurl";
         public static final String PRICE = "price";
+        
     }
     
     public static abstract class QuestionEntry implements BaseColumns {
@@ -28,6 +39,7 @@ public final class DatabaseContract {
         public static final String QUESTION_LOCAL_URL = "local";
         public static final String QUESTION_LESSON_ID = "lessonid";
     }
+    
     
     public static abstract class SessionLogEntry implements BaseColumns {
         public static final String TABLE_NAME = "log";

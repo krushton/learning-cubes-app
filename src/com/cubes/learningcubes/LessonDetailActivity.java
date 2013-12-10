@@ -33,6 +33,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.cubes.learningcubes.DatabaseContract.LessonEntry;
@@ -63,6 +65,7 @@ public class LessonDetailActivity extends Activity {
 		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
 		downloadButton = (Button)findViewById(R.id.download_lesson_button);
 		deleteButton = (Button)findViewById(R.id.delete_lesson_button);
+		
 		if (extras != null) {
 			localId = extras.getLong("localId");
 			remoteId = extras.getLong("remoteId");

@@ -295,6 +295,16 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	long setId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_BLOCK_SET_ID));
     	long categoryId = q.getInt(q.getColumnIndex(LessonEntry.LESSON_CATEGORY_ID));
     	int enabled = q.getInt(q.getColumnIndex(LessonEntry.LESSON_ENABLED));
+    	String startSoundRemoteUrl = q.getString(q.getColumnIndex(LessonEntry.START_SOUND_REMOTE_URL));
+    	String endSoundRemoteUrl = q.getString(q.getColumnIndex(LessonEntry.END_SOUND_REMOTE_URL));
+    	String correctSoundRemoteUrl = q.getString(q.getColumnIndex(LessonEntry.CORRECT_SOUND_REMOTE_URL));
+    	String incorrectSoundRemoteUrl = q.getString(q.getColumnIndex(LessonEntry.INCORRECT_SOUND_REMOTE_URL));
+    	String startSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.START_SOUND_LOCAL_URL));
+    	String endSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.END_SOUND_LOCAL_URL));
+    	String correctSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.CORRECT_SOUND_LOCAL_URL));
+    	String incorrectSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.INCORRECT_SOUND_LOCAL_URL));
+    	String author = q.getString(q.getColumnIndex(LessonEntry.LESSON_AUTHOR));
+    	int rating = q.getInt(q.getColumnIndex(LessonEntry.LESSON_RATING));
     	float price = q.getFloat(q.getColumnIndex(LessonEntry.PRICE));
     	Cursor c = db.query(QuestionEntry.TABLE_NAME, null, QuestionEntry.QUESTION_LESSON_ID + " = " + rowId, null, null, null, null);
     	ArrayList<Question> questions = new ArrayList<Question>();
@@ -306,7 +316,12 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	questions.add(question);
         	c.moveToNext();
     	}
-    	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions, price);
+    	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions, price, 
+    			rating, author,
+    			startSoundRemoteUrl, startSoundLocalUrl,
+   			 	endSoundRemoteUrl, endSoundLocalUrl,
+   			 	correctSoundRemoteUrl, correctSoundLocalUrl,
+   			 	incorrectSoundRemoteUrl, incorrectSoundLocalUrl);
     }
     
     private Question getQuestionFromCursor(Cursor c) {    	
@@ -464,7 +479,19 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(LessonEntry.LESSON_CATEGORY_ID, lesson.categoryId);
     	values.put(LessonEntry.LESSON_BLOCK_SET_ID, lesson.blockSetId);
     	values.put(LessonEntry.LESSON_REMOTE_ID, lesson.remoteId);
+    	values.put(LessonEntry.LESSON_REMOTE_ID, lesson.remoteId);
     	values.put(LessonEntry.PRICE, lesson.price);
+    	values.put(LessonEntry.LESSON_RATING, lesson.rating);
+    	values.put(LessonEntry.LESSON_AUTHOR, lesson.author);
+    	values.put(LessonEntry.START_SOUND_REMOTE_URL, lesson.startSoundRemoteUrl);
+    	values.put(LessonEntry.END_SOUND_REMOTE_URL, lesson.endSoundRemoteUrl);
+    	values.put(LessonEntry.CORRECT_SOUND_REMOTE_URL, lesson.correctSoundRemoteUrl);
+    	values.put(LessonEntry.INCORRECT_SOUND_REMOTE_URL, lesson.incorrectSoundRemoteUrl);
+    	values.put(LessonEntry.START_SOUND_LOCAL_URL, lesson.startSoundLocalUrl);
+    	values.put(LessonEntry.END_SOUND_LOCAL_URL, lesson.endSoundLocalUrl);
+    	values.put(LessonEntry.CORRECT_SOUND_LOCAL_URL, lesson.correctSoundLocalUrl);
+    	values.put(LessonEntry.INCORRECT_SOUND_LOCAL_URL, lesson.incorrectSoundLocalUrl);
+    	
     	if (lesson.enabled) {
     		values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_ENABLED);
     	} else {
@@ -580,7 +607,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	String spellingLessonName = "Spelling animals";
     	Lesson spellingLesson = new Lesson(spellingLessonName, "Practice spelling with animal name words", 
-    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null, 0.0f);
+    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
     	final long spellingLessonId = addLesson(spellingLesson);
 
     	HashMap<String,String> questions = new HashMap<String, String>();
@@ -607,7 +634,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String testLessonName = "Demo Lesson";
 		Lesson stupidTestLesson = new Lesson(testLessonName, "Spelling words that use A, B, O, T, C",
-				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f);
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
 		
 		final long testLessonId = addLesson(stupidTestLesson);
 		HashMap<String,String> testQuestions = new HashMap<String, String>();
@@ -626,7 +653,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
-				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f);
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
 		
 		
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);
@@ -660,7 +687,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String mathLessonName = "Basic addition";
 		Lesson mathLesson = new Lesson(mathLessonName, "Practice adding single digit numbers", 
-			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null, 0.0f);
+			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null, 0.0f, 5, "Teddy");
 		final long mathLessonId = addLesson(mathLesson);
 		
 		HashMap<String,String> moreQuestions = new HashMap<String, String>();
