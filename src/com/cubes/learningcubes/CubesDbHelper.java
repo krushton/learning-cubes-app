@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 43;
+    public static final int DATABASE_VERSION = 45;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -83,7 +83,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
     
-    public void delete(String tableName, int rowId) {
+    public void delete(String tableName, long rowId) {
     	getDbIfNecessary();
     	db.delete(tableName, "_id = " + rowId, null);
     	db.close();
@@ -191,7 +191,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	}
     	return sessions;
     }
-    
     
     public Lesson getActiveLesson() {
     	getDbIfNecessary();
@@ -652,7 +651,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		ArrayList<Long> spellVerbIds = new ArrayList<Long>();
 		
 		for (String key : spellQuestions.keySet()) {
-			Question q = new Question(key, questions.get(key), spellingLesson2Id, "", "");
+			Question q = new Question(key, spellQuestions.get(key), spellingLesson2Id, "", "");
+			Log.d(TAG, q.answer);
 			long id = addQuestion(q);
 			spellVerbIds.add(id);
 		}
@@ -684,7 +684,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		ArrayList<Long> numberIds = new ArrayList<Long>();
 		
 		for (String key : moreQuestions.keySet()) {
-			Question q = new Question(key, questions.get(key), mathLessonId, "", "");
+			Question q = new Question(key, moreQuestions.get(key), mathLessonId, "", "");
 			long id = addQuestion(q);
 			numberIds.add(id);
 		}

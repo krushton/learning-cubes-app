@@ -2,8 +2,11 @@ package com.cubes.learningcubes;
 
 import java.util.regex.Pattern;
 
+import android.util.Log;
+
 public class Question {
 	
+	private final String TAG = "QuestionModel";
 	String text;
 	String answer;
 	long id;
@@ -28,7 +31,14 @@ public class Question {
 		this(t, a, 0, null, null);
 	}
 	
-	public String getAnswerWithoutSeparators() {
-		return answer.replace(Pattern.quote("|"), "");
+	public String getAnswerWithoutSeparators() { 
+		
+		if (answer != null) {
+			Log.d(TAG, answer);
+			return answer.replace("|", "");
+		} else {
+			return "";
+		}
+		
 	}
 }

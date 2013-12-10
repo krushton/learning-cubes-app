@@ -58,6 +58,18 @@
             android:layout_marginBottom="0dp"
             android:textSize="15sp" />
         
+        <Button
+            android:id="@+id/delete_lesson_button"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_above="@+id/bar"
+            android:layout_alignParentRight="true"
+            android:minWidth="90dp"
+            android:visibility="gone"
+            android:text="Remove"
+            android:layout_marginBottom="0dp"
+            android:textSize="15sp" />
+        
         <View
             android:id="@+id/bar"
             android:layout_width="match_parent"
@@ -72,6 +84,8 @@
             android:layout_alignBottom="@+id/placeholder"
             android:layout_alignLeft="@+id/lesson_name"
             android:src="@drawable/four_stars" />
+
+
 
     </RelativeLayout>
 

@@ -151,7 +151,10 @@ public class SearchResultsActivity extends Activity {
 		@Override
 	    protected void onPostExecute(JSONArray itemsList) {
 	        
-			Log.d(TAG, itemsList.toString());
+			if (itemsList != null) {
+				Log.d(TAG, itemsList.toString());
+			}
+			
 			if (dialog.isShowing()) {
 	            dialog.dismiss();
 	        }
@@ -188,7 +191,7 @@ public class SearchResultsActivity extends Activity {
         protected JSONArray doInBackground(String... args) {
         	
             String query = args[0];
-            String url = "http://lessonbuilder.herokuapp.com/lessons.json?q=" + query;
+            String url = "http://fuzzylogic.herokuapp.com/lessons.json?q=" + query;
                 
             HttpResponse response;
             HttpClient httpclient = new DefaultHttpClient();

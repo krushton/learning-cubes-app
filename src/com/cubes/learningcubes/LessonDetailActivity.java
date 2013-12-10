@@ -15,8 +15,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -25,11 +27,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.cubes.learningcubes.DatabaseContract.LessonEntry;
 
 public class LessonDetailActivity extends Activity {
 
@@ -39,6 +45,9 @@ public class LessonDetailActivity extends Activity {
 	private String TAG = "Search Results Activity";
 	private LinearLayout layout;
 	private LessonQuestionListAdapter adapter;
+	private Button downloadButton;
+	private Button deleteButton;
+	private boolean isAlreadyDownloaded = true;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +61,18 @@ public class LessonDetailActivity extends Activity {
 		long localId = 0;
 		long remoteId = 0;
 		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
-		
+		downloadButton = (Button)findViewById(R.id.download_lesson_button);
+		deleteButton = (Button)findViewById(R.id.delete_lesson_button);
 		if (extras != null) {
 			localId = extras.getLong("localId");
 			remoteId = extras.getLong("remoteId");
 		}
 		if (localId != 0) {
 			lesson = db.getLessonById(localId);
+			isAlreadyDownloaded = true;
 			loadLessonDetails();
 		} else {
+			isAlreadyDownloaded = false;
 			layout.setVisibility(View.GONE);
 			LessonLoadTask task = new LessonLoadTask(this);
 			task.execute(remoteId);
@@ -86,7 +98,47 @@ public class LessonDetailActivity extends Activity {
 		ListView lv = (ListView)findViewById(R.id.list);
 		adapter = new LessonQuestionListAdapter(this, lesson.questionsAsArray());
 		lv.setAdapter(adapter);
+		
+		if (!isAlreadyDownloaded) {
+			downloadButton.setText(lesson.getPrice());
+			downloadButton.setOnClickListener(new OnClickListener() {
 
+				@Override
+				public void onClick(View v) {
+					// TODO implement lesson download
+					// lesson.remoteId
+				}
+				
+			});
+		} else {
+			downloadButton.setVisibility(View.GONE);
+			deleteButton.setVisibility(View.VISIBLE);
+			deleteButton.setOnClickListener(new  OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					
+					new AlertDialog.Builder(LessonDetailActivity.this)
+			        .setIcon(android.R.drawable.ic_dialog_alert)
+			        .setTitle(R.string.warning)
+			        .setMessage(R.string.delete_lesson_message)
+			        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+
+			            @Override
+			            public void onClick(DialogInterface dialog, int which) {
+			            	db.delete(LessonEntry.TABLE_NAME, lesson.id);
+			            }
+
+			        })
+			        .setNegativeButton(R.string.cancel, null)
+			        .show();
+					
+					
+				}
+				
+			});
+		}
 		
 	}
 
@@ -265,7 +317,7 @@ public class LessonDetailActivity extends Activity {
 		 protected JSONObject doInBackground(Long... args) {
 	        	
 	            Long id = args[0];
-	            String url = "http://lessonbuilder.herokuapp.com/lessons/" + id + ".json";
+	            String url = "http://fuzzylogic.herokuapp.com/lessons/" + id + ".json";
 	            Log.d(TAG, "URL: " + url);
 	            HttpResponse response;
 	            HttpClient httpclient = new DefaultHttpClient();
