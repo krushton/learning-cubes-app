@@ -29,6 +29,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class LessonDetailActivity extends Activity {
@@ -39,6 +41,7 @@ public class LessonDetailActivity extends Activity {
 	private String TAG = "Search Results Activity";
 	private LinearLayout layout;
 	private LessonQuestionListAdapter adapter;
+	private Button downloadButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +56,16 @@ public class LessonDetailActivity extends Activity {
 		long remoteId = 0;
 		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
 		
+		downloadButton = (Button)findViewById(R.id.download_lesson_button);
+		downloadButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View button) {
+				// TODO Auto-generated method stub
+				//AsyncTask
+			}
+			
+		});
 		if (extras != null) {
 			localId = extras.getLong("localId");
 			remoteId = extras.getLong("remoteId");
