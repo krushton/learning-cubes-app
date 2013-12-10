@@ -31,13 +31,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class SearchResultsActivity extends Activity {
 
@@ -73,7 +72,6 @@ public class SearchResultsActivity extends Activity {
 		handleIntent(getIntent());
 		
 	}
-
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -153,6 +151,7 @@ public class SearchResultsActivity extends Activity {
 		@Override
 	    protected void onPostExecute(JSONArray itemsList) {
 	        
+			Log.d(TAG, itemsList.toString());
 			if (dialog.isShowing()) {
 	            dialog.dismiss();
 	        }

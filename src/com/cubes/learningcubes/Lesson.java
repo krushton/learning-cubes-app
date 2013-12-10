@@ -100,6 +100,14 @@ public class Lesson {
 		this.blockSetId = blockSetId;
 	}
 	
+	public Question[] questionsAsArray() {
+		Question[] list = new Question[questions.size()];
+		for (int i = 0; i < questions.size(); i++) {
+			list[i] = questions.get(i);
+		}
+		return list;
+	}
+	
 	public String getPrice(){
 		if (price == 0.0) {
 			return "Free";

@@ -5,7 +5,7 @@ h2 { font-size:30px; font-weight:300; text-transform:upper-case;}
 a { text-decoration:none; color:#222; }
 
 .toggle { border: 1px solid #eee; padding: 8px; text-align:center; cursor:pointer;}
-.toggle-chart { width:40%; float:left; margin:5px 2% 5px 2%;}
+.toggle-chart { width:38%; display:inline-block; margin:5px 2% 5px 2%; box-sizing:border-box;}
 .time-toggle { position:absolute; top:25px; right:32px; width:130px; }
 .time-toggle.toggled { -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,0.125); box-shadow: inset 0 3px 5px rgba(0,0,0,0.125); background-color: #ebebeb; border-color: #eee;}
 .toggle-chart a {display:block;}
@@ -16,7 +16,7 @@ ul { list-style-type:none; width:146px;  border: 1px solid #eee; padding:0px; po
 li { margin-left:0; padding: 10px 8px; border-bottom:1px solid #eee; background-color:#fff; }
 li.selected { background-color:#ebebeb;}
 #time-menu { display:none;}
-#chart { width:80%; margin: 0 auto;}
+#chart { width:95%; margin: 0 auto;}
 #chart-wrapper { position:relative;  }
 #chart-wrapper a.arrow { display: block; width: 34px; height: 34px; background-image: url('carousel-arrows.png'); z-index: 20; position: absolute; top: 150px;}
 #chart-wrapper a.left { background-position:0px 0px; left:5px; }

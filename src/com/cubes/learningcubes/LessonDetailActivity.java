@@ -16,12 +16,19 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class LessonDetailActivity extends Activity {
@@ -30,6 +37,8 @@ public class LessonDetailActivity extends Activity {
 	private Lesson lesson;
 	private Boolean alreadyDownloaded = false;
 	private String TAG = "Search Results Activity";
+	private LinearLayout layout;
+	private LessonQuestionListAdapter adapter;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +51,8 @@ public class LessonDetailActivity extends Activity {
 		Bundle extras = getIntent().getExtras();
 		long localId = 0;
 		long remoteId = 0;
+		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
+		
 		if (extras != null) {
 			localId = extras.getLong("localId");
 			remoteId = extras.getLong("remoteId");
@@ -50,14 +61,17 @@ public class LessonDetailActivity extends Activity {
 			lesson = db.getLessonById(localId);
 			loadLessonDetails();
 		} else {
+			layout.setVisibility(View.GONE);
 			LessonLoadTask task = new LessonLoadTask(this);
 			task.execute(remoteId);
 		}
+		
 		
 	}
 	
 	private void loadLessonDetails() {
 		
+		layout.setVisibility(View.VISIBLE);
 		getActionBar().setTitle(lesson.lessonName);
 		
 		TextView lessonNameTv = (TextView)findViewById(R.id.lesson_name);
@@ -68,6 +82,11 @@ public class LessonDetailActivity extends Activity {
 		
 		TextView lessonNumberQuestionsTv = (TextView)findViewById(R.id.lesson_number_questions);
 		lessonNumberQuestionsTv.setText(lesson.questions.size()+ " questions");
+		
+		ListView lv = (ListView)findViewById(R.id.list);
+		adapter = new LessonQuestionListAdapter(this, lesson.questionsAsArray());
+		lv.setAdapter(adapter);
+
 		
 	}
 
@@ -87,6 +106,7 @@ public class LessonDetailActivity extends Activity {
 		return true;
 	}
 
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -103,7 +123,38 @@ public class LessonDetailActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	private class LessonQuestionListAdapter extends ArrayAdapter<Question>{
 
+        private final Context context;
+        private final Question[] values;
+
+        public LessonQuestionListAdapter(Context context, Question[] set) {
+                
+        //call the super class constructor and provide the ID of the resource to use instead of the default list view item
+          super(context, R.layout.skinny_lesson_list_item, set);
+          this.context = context;
+          this.values = set;
+        }
+        
+        //this method is called once for each item in the list
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+          LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+          View listItem = inflater.inflate(R.layout.skinny_lesson_list_item, parent, false);
+        
+          TextView text = (TextView)listItem.findViewById(R.id.question);
+          text.setText(values[position].text);
+          
+          TextView answer = (TextView)listItem.findViewById(R.id.question_answer);
+          answer.setText(values[position].getAnswerWithoutSeparators());
+         
+          return listItem;
+        
+        }
+        
+}
 	private class LessonLoadTask extends AsyncTask<Long, Void, JSONObject> {
 		private ProgressDialog dialog;
 		private Activity activity;
@@ -124,9 +175,6 @@ public class LessonDetailActivity extends Activity {
 		@Override
 	    protected void onPostExecute(JSONObject result) {
 	        
-			if (dialog.isShowing()) {
-	            dialog.dismiss();
-	        }
 			if (result != null) {
 				lesson = new Lesson();
 	        	if (result.has("title")) {
@@ -205,6 +253,10 @@ public class LessonDetailActivity extends Activity {
 	        			
 	        		}
 	        	}
+	        	
+	        	if (dialog.isShowing()) {
+		            dialog.dismiss();
+		        }
 	        	loadLessonDetails();
         	}
         	

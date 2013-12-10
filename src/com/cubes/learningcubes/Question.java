@@ -1,5 +1,7 @@
 package com.cubes.learningcubes;
 
+import java.util.regex.Pattern;
+
 public class Question {
 	
 	String text;
@@ -24,5 +26,9 @@ public class Question {
 	
 	public Question(String t, String a, long l) {
 		this(t, a, 0, null, null);
+	}
+	
+	public String getAnswerWithoutSeparators() {
+		return answer.replace(Pattern.quote("|"), "");
 	}
 }
