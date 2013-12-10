@@ -31,6 +31,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class LessonDetailActivity extends Activity {
@@ -54,6 +56,16 @@ public class LessonDetailActivity extends Activity {
 		long remoteId = 0;
 		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
 		
+		downloadButton = (Button)findViewById(R.id.download_lesson_button);
+		downloadButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View button) {
+				// TODO Auto-generated method stub
+				//AsyncTask
+			}
+			
+		});
 		downloadButton = (Button)findViewById(R.id.download_lesson_button);
 		downloadButton.setOnClickListener(new OnClickListener() {
 
