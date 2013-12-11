@@ -289,6 +289,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	return tags;
     }
     public String getTagForMappedValue(String value) {
+    	Log.d(TAG, value);
     	BlockSet blockSet = getActiveBlockSet();
     	if (value != null) {
     		for (Block b : blockSet.set) {
@@ -832,17 +833,23 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     private boolean isSimilarEnough(String testId, String correctId) {
 
 		 testId = testId.toLowerCase().trim();
-		 correctId = correctId.toLowerCase();
+		 correctId = correctId.toLowerCase().trim();
 		 int commonChars = 0;
 		 for (int i = 0; i < testId.length(); i++) {
 			 if (correctId.contains(""+testId.charAt(i))) {
 				 commonChars++;
 			 }
 		 }
+		 Log.d(TAG, "common characters: " + commonChars);
+		 /*
 		 float percent = (float)commonChars / (float)correctId.length();
-		 if (percent > .8) {
+		 if (percent > .99) {
 			 return true;
 		 } 
+		 */
+		 if (commonChars == testId.length()) {
+			 return true;
+		 }
 		 return false;
     }
 }

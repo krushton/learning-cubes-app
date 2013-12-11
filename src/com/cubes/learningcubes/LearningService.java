@@ -194,27 +194,37 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 
 		 testId = testId.toLowerCase().trim();
 		 correctId = correctId.toLowerCase();
-		 Log.d(TAG, "Now comparing: "+ testId + " and " + correctId);
+		 
 		 int commonChars = 0;
 		 for (int i = 0; i < testId.length(); i++) {
 			 if (correctId.contains(""+testId.charAt(i))) {
 				 commonChars++;
 			 }
 		 }
+		 /*
 		 float percent = (float)commonChars / (float)correctId.length();
-		 Log.d(TAG, "Common characters percentage: " + percent );
-		 if (percent > .8) {
+		 if (percent > .99) {
 			 return true;
 		 } 
+		 */
+		 if (commonChars == testId.length()) {
+			 return true;
+		 }
 		 return false;
-	 }
+    }
 	 
 	 private void startGame() {
 		 Log.d(TAG, "STARTING GAME");
 		 Log.d(TAG, "FIRST QUESTION IS " + lesson.questions.get(questionIndex).text);
 		 sayStartupLines();
 		 currentQuestion = lesson.questions.get(questionIndex);
-		 currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(Pattern.quote("|")));
+		 String p = "";
+			if (currentQuestion.answer.contains("|")) {
+				p = Pattern.quote("|");
+			} else {
+				p = Pattern.quote("&");
+			}
+		 currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(p));
 		 questionTask = new QuestionTask();
 		 Timer timer = new Timer();
 		 timer.schedule(questionTask, 2000, 1000);
@@ -253,7 +263,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				waitingForAnswer = true;
 				
 			} else {
-				Log.d(TAG, "Waiting for answer...");
 				
 				for (String item : output) {
 					Log.d(TAG, "output item: " +item);
@@ -279,13 +288,29 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				if (output.size() == currentQuestionTags.length) {
 					
 					boolean correctAnswer = true;
-					for (int i = 0; i < output.size(); i++) {
-						String tag = output.get(i);
-						String tagLookingFor = currentQuestionTags[i];
-						if (!isSimilarEnough(tag, tagLookingFor)) {
-							correctAnswer = false;
+					
+					//order matters
+					if (currentQuestion.answer.contains("|")) {
+						for (int i = 0; i < output.size(); i++) {
+							String tag = output.get(i);
+							String tagLookingFor = currentQuestionTags[i];
+							if (!isSimilarEnough(tag, tagLookingFor)) {
+								correctAnswer = false;
+							}
+						}
+					} else {
+						//order does not matter
+						//
+						for (int i = 0; i < output.size(); i++) {
+							String tag = output.get(i);
+							
+							if (!similarTagFoundInList(tag)) {
+								correctAnswer = false;
+							}
 						}
 					}
+					
+					
 					Log.d(TAG, "Correct answer? " + correctAnswer);
 					if (correctAnswer) {
 						if (lesson.isAdvanced && lesson.correctSoundLocalUrl != null & !lesson.correctSoundLocalUrl.isEmpty()
@@ -328,8 +353,14 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 						
 					} else {
 						questionIndex++;
+						String p = "";
 						currentQuestion = lesson.questions.get(questionIndex);
-						currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(Pattern.quote("|")));
+						if (currentQuestion.answer.contains("|")) {
+							p = Pattern.quote("|");
+						} else {
+							p = Pattern.quote("&");
+						}
+						currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(p));
 						waitingForAnswer= false;
 					}
 					
@@ -337,6 +368,16 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				
 			}
 		 }
+	 }
+	 
+	 private boolean similarTagFoundInList(String tag) {
+		 for (int i = 0; i < currentQuestionTags.length; i++) {
+			 String compareTag = currentQuestionTags[i];
+			 if (isSimilarEnough(tag, compareTag)) {
+				 return true;
+			 }
+		 }
+		 return false;
 	 }
 	 
 	 private void endGame() {
