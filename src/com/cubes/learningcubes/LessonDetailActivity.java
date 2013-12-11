@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,11 +35,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.SearchView;
 import android.widget.TextView;
 
-import com.cubes.learningcubes.DatabaseContract.LessonEntry;
 
 public class LessonDetailActivity extends Activity {
 
@@ -204,6 +203,14 @@ public class LessonDetailActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.lesson_detail, menu);
+		
+		SearchManager searchManager =
+		           (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		    SearchView searchView =
+		            (SearchView) menu.findItem(R.id.search).getActionView();
+		    searchView.setSearchableInfo(
+		            searchManager.getSearchableInfo(getComponentName()));
+
 		return true;
 	}
 
@@ -211,7 +218,7 @@ public class LessonDetailActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case android.R.id.home:
+			case android.R.id.home:
 			// This ID represents the Home or Up button. In the case of this
 			// activity, the Up button is shown. Use NavUtils to allow users
 			// to navigate up one level in the application structure. For
@@ -219,8 +226,11 @@ public class LessonDetailActivity extends Activity {
 			//
 			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
 			//
-			NavUtils.navigateUpFromSameTask(this);
-			return true;
+				NavUtils.navigateUpFromSameTask(this);
+				return true;
+			case R.id.action_mylessons:
+				Intent i = new Intent(this, LessonsActivity.class);
+				startActivity(i);
 		}
 		return super.onOptionsItemSelected(item);
 	}
