@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -43,7 +44,6 @@ public class LessonDetailActivity extends Activity {
 
 	private CubesDbHelper db;
 	private Lesson lesson;
-	private Boolean alreadyDownloaded = false;
 	private String TAG = "Search Results Activity";
 	private LinearLayout layout;
 	private LessonQuestionListAdapter adapter;
@@ -71,8 +71,8 @@ public class LessonDetailActivity extends Activity {
 			remoteId = extras.getLong("remoteId");
 		}
 		if (localId != 0) {
-			lesson = db.getLessonById(localId);
 			isAlreadyDownloaded = true;
+			lesson = db.getLessonById(localId);
 			loadLessonDetails();
 		} else {
 			isAlreadyDownloaded = false;
@@ -98,18 +98,62 @@ public class LessonDetailActivity extends Activity {
 		TextView lessonNumberQuestionsTv = (TextView)findViewById(R.id.lesson_number_questions);
 		lessonNumberQuestionsTv.setText(lesson.questions.size()+ " questions");
 		
+		TextView lessonCreator = (TextView)findViewById(R.id.lesson_author);
+		lessonCreator.setText(lesson.author);
+		
 		ListView lv = (ListView)findViewById(R.id.list);
 		adapter = new LessonQuestionListAdapter(this, lesson.questionsAsArray());
 		lv.setAdapter(adapter);
 		
 		if (!isAlreadyDownloaded) {
+			
 			downloadButton.setText(lesson.getPrice());
 			downloadButton.setOnClickListener(new OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
-					// TODO implement lesson download
-					// lesson.remoteId
+					
+					String message = "";
+					if (lesson.price == 0) {
+						message = "Please confirm that you wish to download the lesson \"" 
+								+ lesson.lessonName + "\"" + ".";
+					} else {
+						message = "Please confirm that you wish to purchase the lesson "
+								+ lesson.lessonName + " for " + lesson.getPrice() + ".";
+					}
+					
+					new AlertDialog.Builder(LessonDetailActivity.this)
+			        .setIcon(android.R.drawable.ic_dialog_alert)
+			        .setTitle(R.string.confirm)
+			        .setMessage(message)
+			        .setPositiveButton(R.string.download, new DialogInterface.OnClickListener() {
+
+			            @Override
+			            public void onClick(DialogInterface dialog, int which) {
+			            	Log.d(TAG, "About to download new lesson");
+			            	
+			            	//save lesson to db
+			            	long savedId = db.addLesson(lesson);
+			            	
+			            	for (Question q : lesson.questions) {
+			            		q.lessonId = savedId;
+			            		db.addQuestion(q);
+			            	}
+			            	if (lesson.isAdvanced) {
+			            		lesson.downloadStatus = Lesson.LESSON_AVAILABLE;
+			            	}else {
+			            		lesson.downloadStatus = Lesson.LESSON_DOWNLOADING;
+			            		Intent serviceIntent = new Intent(LessonDetailActivity.this, LessonDownloadService.class);
+				            	serviceIntent.putExtra("lessonId", savedId);
+				            	startService(serviceIntent);
+			            	}
+			            	
+			            	finish();  	
+			            }
+
+			        })
+			        .setNegativeButton(R.string.cancel, null)
+			        .show();
 				}
 				
 			});
@@ -130,7 +174,9 @@ public class LessonDetailActivity extends Activity {
 
 			            @Override
 			            public void onClick(DialogInterface dialog, int which) {
-			            	db.delete(LessonEntry.TABLE_NAME, lesson.id);
+			            	//todo: delete related sessions and questions also...
+			            	//db.delete(LessonEntry.TABLE_NAME, lesson.id);
+			            	
 			            }
 
 			        })
@@ -213,8 +259,7 @@ public class LessonDetailActivity extends Activity {
 	private class LessonLoadTask extends AsyncTask<Long, Void, JSONObject> {
 		private ProgressDialog dialog;
 		private Activity activity;
-		
-		
+	
 		public LessonLoadTask(Activity activity) {
 	        this.activity = activity;
 	        dialog = new ProgressDialog(activity);
@@ -249,6 +294,48 @@ public class LessonDetailActivity extends Activity {
 						e.printStackTrace();
 					}
 	        	}
+	        	
+	        	if (result.has("author")) {
+	        		try {
+						lesson.author = result.getString("author");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        	
+	        	if (result.has("rating")) {
+	        		try {
+						lesson.rating = result.getInt("rating");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        	
+	        	Boolean isAdvanced = false;
+	        	if (result.has("advanced")) {
+	        		try {
+						isAdvanced = result.getBoolean("advanced");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        	
+	        	if (isAdvanced) {
+	        		try {
+						lesson.rating = result.getInt("rating");
+						lesson.startSoundRemoteUrl = result.getString("start_sound_url");
+						lesson.endSoundRemoteUrl = result.getString("end_sound_url");
+						lesson.correctSoundRemoteUrl = result.getString("correct_sound_url");
+						lesson.incorrectSoundRemoteUrl = result.getString("incorrect_sound_url");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        	
 	        	
 	        	if (result.has("price")) {
 	        		String price = null;
@@ -286,6 +373,7 @@ public class LessonDetailActivity extends Activity {
 	    					}
 	            			String text = "";
 	            			String answer = "";
+	            			String remoteUrl = "";
 	            			if (currentQuestion.has("question")) {
 	            				try {
 	    							text = currentQuestion.getString("question");
@@ -296,14 +384,24 @@ public class LessonDetailActivity extends Activity {
 	            			}
 	            			if (currentQuestion.has("answer")){
 	            				try {
-	    							answer = currentQuestion.getString("answer").replace(Pattern.quote("|"),"");
+	    							answer = currentQuestion.getString("answer");
 	    						} catch (JSONException e) {
 	    							// TODO Auto-generated catch block
 	    							e.printStackTrace();
 	    						}
 	            			}
-	            			Question sampleQuestion = new Question(text, answer, 0);
-	            			lesson.questions.add(sampleQuestion);
+	            			
+	            			if (currentQuestion.has("audio")){
+	            				try {
+	    							remoteUrl = currentQuestion.getString("audio");
+	    						} catch (JSONException e) {
+	    							// TODO Auto-generated catch block
+	    							e.printStackTrace();
+	    						}
+	            			}
+	            			
+	            			Question question = new Question(text, answer, 0, remoteUrl, "");
+	            			lesson.questions.add(question);
 	        			}
 	        			
 	        		}

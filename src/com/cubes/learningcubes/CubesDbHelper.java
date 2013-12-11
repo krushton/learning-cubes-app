@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 45;
+    public static final int DATABASE_VERSION = 48;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -86,7 +86,11 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     public void delete(String tableName, long rowId) {
     	getDbIfNecessary();
     	db.delete(tableName, "_id = " + rowId, null);
-    	db.close();
+    }
+    
+    public void updateValues(String tableName, long rowId, ContentValues values) {
+    	getDbIfNecessary();
+		db.update(tableName, values, "_ID = " + rowId, null);
     }
     
     public Block getBlockById(long rowId) {
@@ -147,7 +151,9 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	c.moveToFirst();
         while(!c.isAfterLast()) {
     		Lesson lesson = getLessonFromCursor(c);
-    		lessons.add(lesson);
+    		if (lesson.downloadStatus == Lesson.LESSON_AVAILABLE) {
+    			lessons.add(lesson);
+    		}
     		c.moveToNext();
     	}
     	return lessons;
@@ -303,6 +309,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	String endSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.END_SOUND_LOCAL_URL));
     	String correctSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.CORRECT_SOUND_LOCAL_URL));
     	String incorrectSoundLocalUrl = q.getString(q.getColumnIndex(LessonEntry.INCORRECT_SOUND_LOCAL_URL));
+    	int lessonDownloadStatus = q.getInt(q.getColumnIndex(LessonEntry.LESSON_DOWNLOAD_STATUS));
+    	
     	String author = q.getString(q.getColumnIndex(LessonEntry.LESSON_AUTHOR));
     	int rating = q.getInt(q.getColumnIndex(LessonEntry.LESSON_RATING));
     	float price = q.getFloat(q.getColumnIndex(LessonEntry.PRICE));
@@ -321,7 +329,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     			startSoundRemoteUrl, startSoundLocalUrl,
    			 	endSoundRemoteUrl, endSoundLocalUrl,
    			 	correctSoundRemoteUrl, correctSoundLocalUrl,
-   			 	incorrectSoundRemoteUrl, incorrectSoundLocalUrl);
+   			 	incorrectSoundRemoteUrl, incorrectSoundLocalUrl,
+   			 	lessonDownloadStatus);
     }
     
     private Question getQuestionFromCursor(Cursor c) {    	
@@ -346,7 +355,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	db = this.getWritableDatabase();
     	Cursor q = db.query(SessionEntry.TABLE_NAME, null,  SessionEntry.SESSON_LESSON_ID + " = " + lessonId, null, null, null, null);
     	q.moveToFirst();
-    	ArrayList<Session> sessions = new ArrayList();
+    	ArrayList<Session> sessions = new ArrayList<Session>();
        	while(!q.isAfterLast()) {
         	Session session = getSessionFromCursor(q);
         	sessions.add(session);
@@ -491,6 +500,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(LessonEntry.END_SOUND_LOCAL_URL, lesson.endSoundLocalUrl);
     	values.put(LessonEntry.CORRECT_SOUND_LOCAL_URL, lesson.correctSoundLocalUrl);
     	values.put(LessonEntry.INCORRECT_SOUND_LOCAL_URL, lesson.incorrectSoundLocalUrl);
+    	values.put(LessonEntry.LESSON_DOWNLOAD_STATUS, lesson.downloadStatus);
     	
     	if (lesson.enabled) {
     		values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_ENABLED);
@@ -539,9 +549,9 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(SessionLogEntry.LOG_QUESTION_ID, log.questionId);
     	values.put(SessionLogEntry.LOG_LESSON_ID, log.lessonId);
     	if (log.questionResult) {
-    		values.put(SessionLogEntry.LOG_QUESTION_RESULT, log.QUESTION_CORRECT);
+    		values.put(SessionLogEntry.LOG_QUESTION_RESULT, LogItem.QUESTION_CORRECT);
     	} else {
-    		values.put(SessionLogEntry.LOG_QUESTION_RESULT, log.QUESTION_INCORRECT);
+    		values.put(SessionLogEntry.LOG_QUESTION_RESULT, LogItem.QUESTION_INCORRECT);
     	}
     	values.put(SessionLogEntry.LOG_SESSION_ID, log.sessionId);
     	return db.insert(SessionLogEntry.TABLE_NAME, null, values);
@@ -607,7 +617,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	String spellingLessonName = "Spelling animals";
     	Lesson spellingLesson = new Lesson(spellingLessonName, "Practice spelling with animal name words", 
-    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
+    			spellingCategory.name, spellingCategory.id, Lesson.LESSON_ENABLED, -1, alphaBlockSetId, null, 0.0f, 5, 
+    			"Fuzzy Logic, Inc.");
     	final long spellingLessonId = addLesson(spellingLesson);
 
     	HashMap<String,String> questions = new HashMap<String, String>();
@@ -634,7 +645,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String testLessonName = "Demo Lesson";
 		Lesson stupidTestLesson = new Lesson(testLessonName, "Spelling words that use A, B, O, T, C",
-				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Fuzzy Logic, Inc.");
 		
 		final long testLessonId = addLesson(stupidTestLesson);
 		HashMap<String,String> testQuestions = new HashMap<String, String>();
@@ -687,7 +698,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String mathLessonName = "Basic addition";
 		Lesson mathLesson = new Lesson(mathLessonName, "Practice adding single digit numbers", 
-			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null, 0.0f, 5, "Teddy");
+			 mathCategory.name, mathCategory.id, Lesson.LESSON_DISABLED, -1, numberSetId, null, 0.0f, 5, "Fuzzy Logic, Inc.");
 		final long mathLessonId = addLesson(mathLesson);
 		
 		HashMap<String,String> moreQuestions = new HashMap<String, String>();

@@ -19,6 +19,8 @@ public class Lesson {
 	ArrayList<Question> questions;
 	static int LESSON_ENABLED = 1;
 	static int LESSON_DISABLED = 0;
+	static int LESSON_DOWNLOADING = 0;
+	static int LESSON_AVAILABLE = 1;
 	float price; 
 	int rating;
 	String author;
@@ -30,6 +32,8 @@ public class Lesson {
 	String correctSoundRemoteUrl;
 	String incorrectSoundRemoteUrl;
 	String incorrectSoundLocalUrl;
+	int downloadStatus;
+	boolean isAdvanced = false;
 	
 	private Random random;
 	
@@ -43,7 +47,8 @@ public class Lesson {
 			String startSoundRemoteUrl, String startSoundLocalUrl,
 			String endSoundRemoteUrl, String endSoundLocalUrl,
 			String correctSoundRemoteUrl, String correctSoundLocalUrl,
-			String incorrectSoundRemoteUrl, String incorrectSoundLocalUrl
+			String incorrectSoundRemoteUrl, String incorrectSoundLocalUrl,
+			int lessonStatus
 			) {
 		this.lessonName = lessonName;
 		this.category = category;
@@ -63,6 +68,11 @@ public class Lesson {
 		this.correctSoundLocalUrl = correctSoundLocalUrl;
 		this.incorrectSoundRemoteUrl = incorrectSoundRemoteUrl;
 		this.incorrectSoundLocalUrl = incorrectSoundLocalUrl;
+		this.downloadStatus = lessonStatus;
+		
+		if (hasAnySoundFiles()) {
+			this.isAdvanced = true;
+		}
 		
 		if (questions == null) {
 			this.questions = new ArrayList<Question>();
@@ -84,7 +94,7 @@ public class Lesson {
 		this(lessonName, description, category, 
 			 categoryId, enableInt, 0, remoteId, blockSetId, 
 			 null, price, rating, author,
-			 "", "", "", "", "", "", "", "");
+			 "", "", "", "", "", "", "", "",1);
 	}
 
 	public Question getRandomQuestion() {
@@ -112,8 +122,24 @@ public class Lesson {
 		if (price == 0.0) {
 			return "Free";
 		} else {
-			return String.valueOf(price);
+			return "$" + String.valueOf(price);
 		}
+	}
+	
+	private boolean hasAnySoundFiles() {
+		
+		String[] urls = {
+				startSoundRemoteUrl,
+				endSoundRemoteUrl,
+				correctSoundRemoteUrl,
+				incorrectSoundRemoteUrl
+		};
+		for (String url : urls) {
+			if (url != null && !url.isEmpty()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

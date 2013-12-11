@@ -117,7 +117,7 @@ public class LessonsActivity extends Activity {
 	    public LessonsListAdapter(Context context, Lesson[] lessons) {
 	            
 	    //call the super class constructor and provide the ID of the resource to use instead of the default list view item
-	      super(context, R.layout.blockset_list_item, lessons);
+	      super(context, R.layout.lesson_list_item, lessons);
 	      this.context = context;
 	      this.values = lessons;
 	    }

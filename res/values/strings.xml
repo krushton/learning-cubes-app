@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Fuzzy Logic</string>
+
+    <string name="app_name">Fuzzy Logic</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="empty"></string>
@@ -47,5 +48,8 @@
     <string name="delete_lesson_message">Are you sure you would like to delete this lesson?</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="download">Download</string>
+    <string name="title_activity_category_detail">Category</string>
 
 </resources>

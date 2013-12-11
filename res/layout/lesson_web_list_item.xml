@@ -16,6 +16,7 @@
         android:layout_marginTop="3dp"
         android:layout_marginRight="70dp"
         android:text="Space Animals"
+        android:lines="1"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="22sp" />
 
@@ -25,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/web_lesson_name"
-        android:lines="1"   
+        android:maxLines="2"   
         android:text="A psychadelic adventure in wonderland"
         android:textAppearance="?android:attr/textAppearanceSmall" />
     

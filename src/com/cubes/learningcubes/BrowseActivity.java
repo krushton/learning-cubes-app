@@ -67,10 +67,14 @@ public class BrowseActivity extends Activity {
 	}
 	
 	public void handleClick(View v) {
-		String q = "Category: ";
+		String q = "";
+		Intent intent = new Intent(this, CategoryDetailActivity.class);
 		switch(v.getId()) {
 			case R.id.spelling:
 				q += "Spelling";
+				intent.putExtra("remoteCategoryId", 1);
+				intent.putExtra("categoryName", q);
+				startActivity(intent);
 				break;
 			case R.id.history:
 				q += "History";

@@ -3,6 +3,7 @@ package com.cubes.learningcubes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -35,25 +36,29 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
-public class SearchResultsActivity extends Activity {
+public class CategoryDetailActivity extends Activity {
 
+	private CubesDbHelper db;
 	private SearchResultsListAdapter adapter;
-	private final String TAG = "Search results activity";
 	private ArrayList<Lesson> lessons;
-
+	private final String TAG = "CategoryDetailActivity";
+	private Random random;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		//reuse layout from search results
 		setContentView(R.layout.activity_search_results);
 		// Show the Up button in the action bar.
 		setupActionBar();
+		db = CubesDbHelper.getInstance(this);
+		random = new Random();
 		lessons = new ArrayList<Lesson>();
-		ListView lv = (ListView)findViewById(R.id.search_results_list);
-		
 		adapter = new SearchResultsListAdapter(this, lessons);
+		ListView lv = (ListView)findViewById(R.id.search_results_list);
 		lv.setAdapter(adapter);
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
@@ -61,31 +66,26 @@ public class SearchResultsActivity extends Activity {
 			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
 					long arg3) {
 				long id = (Long)v.getTag();
-				Intent i = new Intent(SearchResultsActivity.this, LessonDetailActivity.class);
+				Intent i = new Intent(CategoryDetailActivity.this, LessonDetailActivity.class);
 				i.putExtra("remoteId", id);
 				startActivity(i);
 			}
 
 		});
-		
-		handleIntent(getIntent());
+		lessons.clear();
+		Intent intent = getIntent();
+        String categoryName = intent.getStringExtra("categoryName");
+        getActionBar().setTitle("Browse category: " + categoryName);
+       
+        int categoryId = intent.getIntExtra("remoteCategoryId", 0);
+        if (categoryId != 0) {
+        	CategorySearchTask task = new CategorySearchTask(this);
+            task.execute(categoryId);
+        }
+        
 		
 	}
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        handleIntent(intent);
-    }
-
-    private void handleIntent(Intent intent) {
-
-    	lessons.clear();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            SearchResultsTask task = new SearchResultsTask(this);
-            task.execute(query);
-        } 
-    }
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
@@ -94,18 +94,11 @@ public class SearchResultsActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.search_results, menu);
-		
-		SearchManager searchManager =
-		           (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		    SearchView searchView =
-		            (SearchView) menu.findItem(R.id.search).getActionView();
-		    searchView.setSearchableInfo(
-		            searchManager.getSearchableInfo(getComponentName()));
+		getMenuInflater().inflate(R.menu.category_detail, menu);
 		return true;
 	}
 
@@ -122,20 +115,16 @@ public class SearchResultsActivity extends Activity {
 			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
-		case R.id.action_mylessons:
-			Intent i = new Intent(this, LessonsActivity.class);
-			startActivity(i);
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
-
-	private class SearchResultsTask extends AsyncTask<String, Void, JSONArray> {
+	private class CategorySearchTask extends AsyncTask<Integer, Void, JSONObject> {
 		private ProgressDialog dialog;
 		private Activity activity;
 		
 		
-		public SearchResultsTask(Activity activity) {
+		public CategorySearchTask(Activity activity) {
 	        this.activity = activity;
 	        dialog = new ProgressDialog(activity);
 	    }
@@ -148,53 +137,61 @@ public class SearchResultsActivity extends Activity {
 	    }
 		
 		@Override
-	    protected void onPostExecute(JSONArray itemsList) {
+	    protected void onPostExecute(JSONObject categoryObject) {
 	        
-			if (itemsList != null) {
-				Log.d(TAG, itemsList.toString());
+			if (categoryObject != null) {
+				Log.d(TAG, categoryObject.toString());
+			} else {
+				Log.d(TAG, "category is null");
 			}
 			
 			if (dialog.isShowing()) {
 	            dialog.dismiss();
 	        }
 	        
-            for (int i = 0; i < itemsList.length(); i++) {
-            	
-                try {
-                           
-                	Lesson lesson = new Lesson();
-                	JSONObject object = itemsList.getJSONObject(i);
-                	lesson.lessonName = object.getString("title");
-                	lesson.description = object.getString("description");
-                	String url =  object.getString("url");
-                	String[] urlPieces = url.split(Pattern.quote("/"));
-                	//hack, we're not sending the ID currently so just stripping it out of the url
-                	Long id = Long.valueOf(urlPieces[urlPieces.length-1].replace(".json", ""));
-                	lesson.remoteId = id;
-                	String price = object.getString("price");
-                	if (price.isEmpty()) {
-                		lesson.price = 0.0f;
-                	} else {
-                		lesson.price = Float.valueOf(price);
-                	}
-                	adapter.addItem(lesson);
-                	
-                    } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                    }
-            }           
+			JSONArray itemsList;
+			try {
+				 itemsList = categoryObject.getJSONArray("lessons");
+				 for (int i = 0; i < itemsList.length(); i++) {
+		            	
+		                try {
+		                           
+		                	Lesson lesson = new Lesson();
+		                	JSONObject object = itemsList.getJSONObject(i);
+		                	lesson.lessonName = object.getString("title");
+		                	lesson.description = object.getString("description");
+		                	lesson.remoteId = object.getLong("id");
+		                	String price = object.getString("price");
+		                	if (price.isEmpty()) {
+		                		lesson.price = 0.0f;
+		                	} else {
+		                		lesson.price = Float.valueOf(price);
+		                	}
+		                	adapter.addItem(lesson);
+		                	
+		                    } catch (JSONException e) {
+		                            // TODO Auto-generated catch block
+		                            e.printStackTrace();
+		                    }
+		            }   
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+                   
 		}
 		
         
-        protected JSONArray doInBackground(String... args) {
+        protected JSONObject doInBackground(Integer... args) {
         	
-            String query = args[0];
-            String url = "http://fuzzylogic.herokuapp.com/lessons.json?q=" + query;
-                
+            int categoryId = args[0];
+            String url = "http://fuzzylogic.herokuapp.com/categories/" + categoryId + ".json";
+            Log.d(TAG, "URL IS: " + url);
             HttpResponse response;
             HttpClient httpclient = new DefaultHttpClient();
             String responseString = "";
+            
 
             try {
             	response = httpclient.execute(new HttpGet(url));
@@ -216,8 +213,8 @@ public class SearchResultsActivity extends Activity {
 	            //TODO Handle problems..
 	        }
 	        try {
-                JSONArray mLessons = new JSONArray(responseString);
-                return mLessons;
+                JSONObject mCategory = new JSONObject(responseString);
+                return mCategory;
 	        } catch (JSONException e) {
 	                // TODO Auto-generated catch block
 	                e.printStackTrace();
@@ -227,6 +224,6 @@ public class SearchResultsActivity extends Activity {
 	}
 	
 	
- }
 
 
+}
