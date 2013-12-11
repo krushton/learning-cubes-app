@@ -117,15 +117,20 @@ public class WebAppInterface {
     		lessonNames.add(lesson.lessonName);
     		float totalScore = 0.0f;
     		int totalLength = 0;
+    		float averageScore = 0.0f;
+    		int averageLength = 0;
 
     		ArrayList<Session> sessions = db.getSessionsForLesson(lesson.id);
-    		for (Session session : sessions) {
-    			totalScore += session.score;
-    			totalLength += session.sessionLength;
+    		if (sessions.size() > 0) {
+    			for (Session session : sessions) {
+        			totalScore += session.score;
+        			totalLength += session.sessionLength;
+        		}
+        		
+        		averageScore = totalScore/(float)sessions.size();
+        		averageLength = totalLength/sessions.size();
     		}
     		
-    		float averageScore = totalScore/(float)sessions.size();
-    		int averageLength = totalLength/sessions.size();
     		averageScores.add(averageScore);
     		averageLengths.add(averageLength);
     		totalLengths.add(totalLength);
