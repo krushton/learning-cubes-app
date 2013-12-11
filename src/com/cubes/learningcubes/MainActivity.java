@@ -100,7 +100,6 @@ public class MainActivity extends Activity {
 				serviceToggleButton.setActivated(running); 
 				if (!running) {
 					task.cancel();
-				
 				}
 			}
 			
@@ -151,6 +150,7 @@ public class MainActivity extends Activity {
 							serviceIsRunning = false;
 							stopService(intent);
 						} else {
+						
 							
 							BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 							if (mBluetoothAdapter == null) {

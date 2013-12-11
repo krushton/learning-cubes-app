@@ -1,19 +1,21 @@
 package com.cubes.learningcubes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -21,6 +23,8 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -31,6 +35,7 @@ import android.widget.Toast;
 public class LearningService extends Service implements TextToSpeech.OnInitListener{
 
 	private TextToSpeech tts;
+	private MediaPlayer audioPlayer = new MediaPlayer();
 	private Lesson lesson;
 	private CubesDbHelper db;
 	private final String TAG = "Learning Service";
@@ -41,19 +46,24 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	private int numberCorrect = 0;
 	private int lastKnownOutputLength = 0;
 	
+	private SoundQueueWatcher watcher = new SoundQueueWatcher();
 	private QuestionTask questionTask;
 	private Question currentQuestion;
 	private String[] currentQuestionTags;
 	private ArrayList<String> output = new ArrayList<String>();
 	
+	private boolean audioPlayerAvailable = true; 
 	private UUID mDeviceUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // Standard SPP UUID
 	 
 	private BluetoothSocket mBTSocket;
 	private ReadInput mReadThread = null;
 
+	private Queue<String> soundQueue = new LinkedBlockingQueue<String>();
 	private boolean mIsUserInitiatedDisconnect = false;
 	private boolean bluetoothReady = false;
 	private boolean textToSpeechReady = false;
+	
+	private Random random = new Random();
 
 	private BluetoothDevice mDevice;
 	private long lastAddTime;
@@ -82,6 +92,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		tts.setSpeechRate(.6f);
 		mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 		
+		
         if (mBTAdapter == null)
         {
             Toast.makeText(this, "Bluetooth cannot be initialized.", Toast.LENGTH_SHORT).show();
@@ -104,13 +115,20 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
         
         CheckIfReadyTask task = new CheckIfReadyTask();
         Timer timer = new Timer();
-        timer.schedule(task, 0, 3000);
+        timer.schedule(task, 0, 2000);
+        
     }
     
-    private void speak(String text) {
-    	Log.d(TAG, "TEXT TO SPEECH: " + text);
+    private void speakText(String text) {
     	tts.speak(text, TextToSpeech.QUEUE_ADD, null);
     }
+    
+   
+    
+    private void speakSound(final String pathToAudioFile) {
+    	soundQueue.add(pathToAudioFile);
+    }
+    
    
     private void pause(int duration) {
     	tts.playSilence(duration, TextToSpeech.QUEUE_ADD, null);
@@ -131,19 +149,28 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	
 	public void sayStartupLines() {
 		//start startup sequence
-		speak("The next lesson is " + lesson.lessonName);
-		pause(1000);		
+		
+		if (lesson.isAdvanced && lesson.startSoundLocalUrl != null && checkIfFileExistsAndHasData(lesson.startSoundLocalUrl)) {
+			speakSound(lesson.startSoundLocalUrl);
+		} else {
+			speakText("The next lesson is " + lesson.lessonName);
+			pause(1000);	
+		}	
 	}
+	
 	
 	public void sayEndingLines() {
 		//start startup sequence
-		speak("Lesson complete.");
-		pause(1000);
-		speak("You answered " + numberCorrect + " of " + lesson.questions.size() + " questions correctly");
-		pause(1000);
+		if (lesson.isAdvanced && lesson.endSoundLocalUrl != null && checkIfFileExistsAndHasData(lesson.endSoundLocalUrl)) {
+			speakSound(lesson.endSoundLocalUrl);
+		} else {
+			speakText("The next lesson is " + lesson.endSoundLocalUrl);
+			pause(1000);	
+		}	
+		
 		Timer timer = new Timer();
 		CheckIfDoneTask task = new CheckIfDoneTask();
-		timer.schedule(task, 1000, 1000);
+		timer.schedule(task, 1000, 600);
 	}
 	
 	
@@ -186,15 +213,47 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		 currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(Pattern.quote("|")));
 		 questionTask = new QuestionTask();
 		 Timer timer = new Timer();
-		 timer.schedule(questionTask, 2000, 2000);
+		 timer.schedule(questionTask, 2000, 1000);
+		 
+
+         Timer watchTimer = new Timer();
+         watchTimer.schedule(watcher, 0, 500);
 		 mReadThread = new ReadInput();
 	 }
 	 
-	 
+	 private boolean checkIfFileExistsAndHasData(final String path) {
+		 File file = new File(path);
+		 Log.d(TAG, " CHECKING FILE EXISTS? " + path);
+		 if (file.exists() && file.length() > 0) {
+			 return true;
+		 } else {
+			 return false;
+		 }
+			
+	 }
 	 private class QuestionTask extends TimerTask {
 		 public void run() { 
+			 
 			if (!waitingForAnswer) {
-				speak(currentQuestion.text);
+				
+				if (lesson.isAdvanced && currentQuestion.localUrl != null && !currentQuestion.localUrl.isEmpty()
+						&& checkIfFileExistsAndHasData(currentQuestion.localUrl)) {
+					Log.d(TAG, " NOW SAYING IN REAL SOUND: " +  currentQuestion.localUrl);
+					speakSound(currentQuestion.localUrl);
+				} else {
+					Log.d(TAG, "Can't load current question sound " + currentQuestion.text + " because");
+					if (!lesson.isAdvanced) {
+						Log.d(TAG, "Lesson is not advanced");
+					} 
+					if (currentQuestion.localUrl == null) {
+						Log.d(TAG, "Local url is null");
+					}
+					if (currentQuestion.localUrl.isEmpty()) {
+						Log.d(TAG, "local url is empty");
+					}
+					
+					speakText(currentQuestion.text);
+				}
 				waitingForAnswer = true;
 				
 			} else {
@@ -206,12 +265,17 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				Log.d(TAG, "OUTPUT LENGTH IS " + output.size());
 				
 				if (output.size() > lastKnownOutputLength) {
-					Log.d(TAG, "We see a new block");
 					Block block = db.getBlockByTagValue(output.get(output.size()-1));
 					if (block != null) {
-						speak(block.text);
+						if (lesson.isAdvanced && block.localUrl != null && !block.localUrl.isEmpty()
+								&& checkIfFileExistsAndHasData(block.localUrl)) {
+							speakSound(block.localUrl);
+						} else {
+							speakText(block.text);
+						}
+						
 					} else {
-						speak("I do not recognize that block");
+						speakText("I do not recognize that block");
 					}
 					lastKnownOutputLength++;
 					
@@ -229,10 +293,36 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 					}
 					Log.d(TAG, "Correct answer? " + correctAnswer);
 					if (correctAnswer) {
-						speak("Great job!");
+						if (lesson.isAdvanced && lesson.correctSoundLocalUrl != null & !lesson.correctSoundLocalUrl.isEmpty()
+								&& checkIfFileExistsAndHasData(lesson.correctSoundLocalUrl)) {
+							speakSound(lesson.correctSoundLocalUrl);
+						} else {
+							String[] correct = {
+									"Great job",
+									"Nice one",
+									"Awesome",
+									"That's correct",
+									"Super!"
+							};
+							int index = random.nextInt(correct.length);
+							speakText(correct[index]);
+						}
+						
 						numberCorrect++;
 					} else {
-						speak("Sorry, that is not correct");
+						if (lesson.isAdvanced && lesson.incorrectSoundLocalUrl != null & !lesson.incorrectSoundLocalUrl.isEmpty()
+								&& checkIfFileExistsAndHasData(lesson.incorrectSoundLocalUrl)) {
+							speakSound(lesson.incorrectSoundLocalUrl);
+						} else {
+							String[] incorrect = {
+									"Sorry",
+									"No, that is not correct",
+									"No, sorry",
+									"Sorry, that's not right",
+							};
+							int index = random.nextInt(incorrect.length);
+							speakText(incorrect[index]);
+						}
 					}
 					output.clear();
 					lastKnownOutputLength = 0;
@@ -259,6 +349,8 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		 
          if (prefs.contains("serviceRunning")) {
         	 prefs.edit().putBoolean("serviceRunning", false);
+         } else {
+        	 prefs.edit().putBoolean("serviceRunning", false);
          }
          
 		 if (mBTSocket != null && bluetoothReady) {
@@ -268,6 +360,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				tts.stop();
 	            tts.shutdown();
 	        }
+	     questionTask.cancel();
 		 stopSelf();
 	 }
 	 
@@ -282,6 +375,8 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 		 }
 	 }
 	 
+	 
+	 
 	 private class CheckIfDoneTask extends TimerTask {
 		 public void run() {
 			 if (!tts.isSpeaking()) {
@@ -290,7 +385,40 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			 }
 		 }
 	 }
-	 	 
+	 	
+	 private class SoundQueueWatcher extends TimerTask {
+		 
+		 public void run() {
+			 if (soundQueue.size() > 0 && audioPlayerAvailable) {
+				 try {
+					 	
+						 audioPlayer.setDataSource(soundQueue.poll());
+						 audioPlayer.setOnCompletionListener(new OnCompletionListener() {
+
+							@Override
+							public void onCompletion(MediaPlayer mp) {
+								mp.stop();
+							    mp.reset();
+								audioPlayerAvailable = true;
+							}
+							 
+						 });
+						 audioPlayer.prepare();
+						 audioPlayer.start();
+						 audioPlayerAvailable = false;
+					} catch (Exception e) {
+				    	Log.d(TAG, "MEDIA PLAYER CANT BE STARTED");
+				    	Log.d(TAG, e.getMessage());
+				        e.printStackTrace();
+				    } 			 
+			 }
+		 }
+			
+	 }
+	 	
+	 
+		 
+	    
 	 private class ReadInput implements Runnable {
 
 			private boolean bStop = false;
@@ -322,9 +450,11 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 							for (i = 0; i < buffer.length && buffer[i] != 0; i++) {
 							}
 							final String strInput = new String(buffer, 0, i);
-								if (DateTime.now().getMillis() - lastAddTime < 1500) {
+								if (DateTime.now().getMillis() - lastAddTime < 800) {
 									int length = output.size();
-									output.set(length-1, output.get(length-1) + strInput);
+									if (length > 0) {
+										output.set(length-1, output.get(length-1) + strInput);
+									}
 								} else {
 									output.add(strInput);
 									lastAddTime = DateTime.now().getMillis();
