@@ -45,11 +45,13 @@
     <string name="service_name">Learning Service</string>
     <string name="title_activity_search_results">Search Results</string>
     <string name="warning">Warning</string>
-    <string name="delete_lesson_message">Are you sure you would like to delete this lesson?</string>
+    <string name="delete_lesson_message">Are you sure you would like to delete this lesson? This will also delete any sessions associated with it.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="download">Download</string>
     <string name="title_activity_category_detail">Category</string>
+    <string name="lesson_enabled_message">Cannot delete the active lesson.</string>
+    <string name="ok">OK</string>
 
 </resources>

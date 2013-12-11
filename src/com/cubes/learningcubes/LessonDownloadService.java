@@ -51,7 +51,7 @@ public class LessonDownloadService extends IntentService {
         	sayAToast("Cannot access SD card :(");
         	stopSelf();
         } else {
-        	sayAToast("Starting download...");
+        	sayAToast("Starting download... the lesson will appear in My Lessons when the download is complete.");
         }
         
         if (lessonId > 0) {

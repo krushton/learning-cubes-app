@@ -1,7 +1,9 @@
 package com.cubes.learningcubes;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
@@ -13,6 +15,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.cubes.learningcubes.DatabaseContract.LessonEntry;
+import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -164,23 +171,78 @@ public class LessonDetailActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
+
+					if (lesson.enabled) {
+						new AlertDialog.Builder(LessonDetailActivity.this)
+				        .setIcon(android.R.drawable.ic_dialog_alert)
+				        .setTitle(R.string.warning)
+				        .setMessage(R.string.lesson_enabled_message)
+				        .setPositiveButton(R.string.ok, null)
+				        .show();
+						
+					} else {
+						new AlertDialog.Builder(LessonDetailActivity.this)
+				        .setIcon(android.R.drawable.ic_dialog_alert)
+				        .setTitle(R.string.warning)
+				        .setMessage(R.string.delete_lesson_message)
+				        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+
+				            @Override
+				            public void onClick(DialogInterface dialog, int which) {
+				            	
+				            	//find audio file paths...
+				            	String[] paths = { 
+				            			lesson.correctSoundLocalUrl,
+				            			lesson.incorrectSoundLocalUrl,
+				            			lesson.startSoundLocalUrl,
+				            			lesson.endSoundLocalUrl
+				            	};
+				            	
+				            	//delete any that exist
+				            	for (String path : paths) {
+				            		if (path != null) {
+				            		
+					            		File f = new File(path);
+					            		boolean deleted = f.delete();
+				            		}
+				            	}
+				            	
+				            	
+				            	
+				            	//delete related sessions
+				            	List<Session> sessions = db.getSessionsForLesson(lesson.id);
+				            	for (Session s : sessions) {
+				            		
+				            		//but first have to delete related logs
+				            		for (LogItem log : s.sessionLog) {
+				            			db.delete(SessionLogEntry.TABLE_NAME, log.id);
+				            		}
+				            		//ok now can delete the session
+				            		db.delete(SessionEntry.TABLE_NAME, s.id);
+				            	
+				            	}
+				            	
+				            	//find questions and delete them and their file paths
+				            	for (Question q : lesson.questions) {
+				            		Log.d(TAG, "Deleting question: " + q.text);
+				            		db.delete(QuestionEntry.TABLE_NAME, q.id);
+				            		String filePath = q.localUrl;
+				            		File file = new File(filePath);
+				            		boolean deleted = file.delete();
+				            	}
+				            	
+				            	//delete lesson
+				            	db.delete(LessonEntry.TABLE_NAME, lesson.id);
+				            	Intent intent = new Intent(LessonDetailActivity.this, LessonsActivity.class);
+				            	startActivity(intent);
+				            	
+				            }
+
+				        })
+				        .setNegativeButton(R.string.cancel, null)
+				        .show();
+					}
 					
-					new AlertDialog.Builder(LessonDetailActivity.this)
-			        .setIcon(android.R.drawable.ic_dialog_alert)
-			        .setTitle(R.string.warning)
-			        .setMessage(R.string.delete_lesson_message)
-			        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
-
-			            @Override
-			            public void onClick(DialogInterface dialog, int which) {
-			            	//todo: delete related sessions and questions also...
-			            	//db.delete(LessonEntry.TABLE_NAME, lesson.id);
-			            	
-			            }
-
-			        })
-			        .setNegativeButton(R.string.cancel, null)
-			        .show();
 					
 					
 				}
