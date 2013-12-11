@@ -67,9 +67,7 @@ public class MainActivity extends Activity {
 		            	startActivity(intent);
 		            	break;
 		            case 5:
-		            	//todo: remove this when we make a service
-		            	intent = new Intent(MainActivity.this, GameActivity.class);
-		            	startActivity(intent);
+		            	//does nothing now that we have a service
 		            	break;
 		            case 4:
 		            default:
