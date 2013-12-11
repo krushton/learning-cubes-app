@@ -29,7 +29,7 @@ public final class DatabaseContract {
         public static final String INCORRECT_SOUND_LOCAL_URL = "incorrectsoundlocalurl";
         public static final String PRICE = "price";
         public static final String LESSON_DOWNLOAD_STATUS = "lessondownloadstatus";
-        
+        public static final String LESSON_THUMBNAIL_URL = "lessonthumbnailurl";
     }
     
     public static abstract class QuestionEntry implements BaseColumns {

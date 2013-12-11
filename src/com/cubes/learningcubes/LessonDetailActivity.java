@@ -2,7 +2,13 @@ package com.cubes.learningcubes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -11,6 +17,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,8 +29,12 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +48,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -50,13 +62,14 @@ public class LessonDetailActivity extends Activity {
 
 	private CubesDbHelper db;
 	private Lesson lesson;
-	private String TAG = "Search Results Activity";
+	private String TAG = "Lesson Detail Activity";
 	private LinearLayout layout;
 	private LessonQuestionListAdapter adapter;
 	private Button downloadButton;
 	private Button deleteButton;
 	private boolean isAlreadyDownloaded = true;
 	private BlockSet blockSet;
+	private long remoteId;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +81,7 @@ public class LessonDetailActivity extends Activity {
 		db = CubesDbHelper.getInstance(this);
 		Bundle extras = getIntent().getExtras();
 		long localId = 0;
-		long remoteId = 0;
+		remoteId = 0;
 		layout = (LinearLayout)findViewById(R.id.lesson_detail_layout);
 		downloadButton = (Button)findViewById(R.id.download_lesson_button);
 		deleteButton = (Button)findViewById(R.id.delete_lesson_button);
@@ -92,6 +105,13 @@ public class LessonDetailActivity extends Activity {
 		
 	}
 	
+	private void updateLessonImage(String path) {
+		Log.d(TAG, path + " hello from update lesson!!!");
+		if (path != null) {
+			ImageView lessonIcon = (ImageView)findViewById(R.id.lesson_thumbnail);
+			lessonIcon.setImageDrawable(Drawable.createFromPath(path));
+		}		
+	}
 	private void loadLessonDetails() {
 		
 		layout.setVisibility(View.VISIBLE);
@@ -111,9 +131,12 @@ public class LessonDetailActivity extends Activity {
 		
 		TextView lessonBlockSetTv = (TextView)findViewById(R.id.lesson_blockset_name);
 		lessonBlockSetTv.setText("Uses blockset \"" + blockSet.name + "\"");
-		
+
+		if (lesson.thumbnailUrl != null && !lesson.thumbnailUrl.isEmpty()) {
+			ImageView lessonIcon = (ImageView)findViewById(R.id.lesson_thumbnail);
+			lessonIcon.setImageDrawable(Drawable.createFromPath(lesson.thumbnailUrl));
+		}
 	
-		
 		ListView lv = (ListView)findViewById(R.id.list);
 		adapter = new LessonQuestionListAdapter(this, lesson.questionsAsArray());
 		lv.setAdapter(adapter);
@@ -386,6 +409,8 @@ public class LessonDetailActivity extends Activity {
 	        
 			if (result != null) {
 				lesson = new Lesson();
+				lesson.remoteId = remoteId;
+				
 	        	if (result.has("title")) {
 	        		try {
 						lesson.lessonName = result.getString("title");
@@ -425,13 +450,13 @@ public class LessonDetailActivity extends Activity {
 	        	if (result.has("block_set")) {
 	        		try {
 						JSONObject set = result.getJSONObject("block_set");
-						long remoteId = set.getLong("id");
-						BlockSet existing = db.getBlockSetByRemoteId(remoteId);
+						long bsId = set.getLong("id");
+						BlockSet existing = db.getBlockSetByRemoteId(bsId);
 						if (existing != null) {
 							blockSet = existing;
 						} else {
 							String title = set.getString("title");
-							blockSet = new BlockSet(title, false, remoteId);
+							blockSet = new BlockSet(title, false, bsId);
 						}
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -461,7 +486,24 @@ public class LessonDetailActivity extends Activity {
 						e.printStackTrace();
 					}
 	        	}
-	        	
+
+	        	if (result.has("thumbnail")) {
+	        		
+	        		
+	        		DateTime date = new DateTime();
+	        		final String fileName = String.valueOf(date.getMillis()) + "-" + lesson.remoteId + ".jpg";
+        		
+	        		String url;
+					try {
+						url = result.getString("thumbnail");
+		        		ImageDownloadTask task = new ImageDownloadTask();
+		        		task.execute(url, fileName);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        		
+	        	}
 	        	
 	        	if (result.has("price")) {
 	        		String price = null;
@@ -545,7 +587,6 @@ public class LessonDetailActivity extends Activity {
 	        	
 	            Long id = args[0];
 	            String url = "http://fuzzylogic.herokuapp.com/lessons/" + id + ".json";
-	            Log.d(TAG, "URL: " + url);
 	            HttpResponse response;
 	            HttpClient httpclient = new DefaultHttpClient();
 	            String responseString = "";
@@ -557,7 +598,6 @@ public class LessonDetailActivity extends Activity {
 	            		response.getEntity().writeTo(out);
 	            		out.close();
 	            		responseString = out.toString();
-	            		Log.d(TAG, "RESPONSE: " + responseString);
 		            } else{
 		                //Closes the connection.
 		                response.getEntity().getContent().close();
@@ -578,5 +618,82 @@ public class LessonDetailActivity extends Activity {
 		        } 
 		        return null;
 	        }
+		}
+	
+	private class ImageDownloadTask extends AsyncTask<String, Void, String>{
+
+		private ProgressBar progressBar;
+		private ImageView thumbnail;
+		
+		@Override
+		protected String doInBackground(String... params) {
+			
+			
+			
+			Log.d(TAG, "Made it to lesson download task");
+			Log.d(TAG, params[0] + " " + params[1]);
+			
+			String remoteUrl = params[0];
+			String targetFilePath = params[1];
+			
+		    Bitmap bmp = getBitmapFromURL(remoteUrl);
+		    
+		    File sdCard = Environment.getExternalStorageDirectory();
+    		File dir = new File(sdCard.getAbsolutePath() + "/fuzzylogic");
+    		dir.mkdirs();
+    		File file = new File(dir, targetFilePath);
+    		
+    		OutputStream out;
+			try {
+				out = new FileOutputStream(file);
+				bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
+			    out.close();
+			    return file.getAbsolutePath();
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, "File not found exception " + e.getMessage());
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				Log.e(TAG, "IO exception" + e.getMessage());
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
+		
+		protected void onPreExecute() {
+	       progressBar = (ProgressBar)findViewById(R.id.thumbnail_progress);
+	       thumbnail = (ImageView)findViewById(R.id.lesson_thumbnail);
+	       progressBar.setVisibility(View.VISIBLE);
+	       thumbnail.setVisibility(View.GONE);
+	     }
+		
+		protected void onPostExecute(String newFilePath) {
+	         lesson.thumbnailUrl = newFilePath;
+	         updateLessonImage(newFilePath);
+	         progressBar.setVisibility(View.GONE);
+		     thumbnail.setVisibility(View.VISIBLE);
+	     }
+		
+		private Bitmap getBitmapFromURL(String link) {
+		 
+		    try {
+		        URL url = new URL(link);
+		        HttpURLConnection connection = (HttpURLConnection) url
+		                .openConnection();
+		        connection.setDoInput(true);
+		        connection.connect();
+		        InputStream input = connection.getInputStream();
+		        Bitmap myBitmap = BitmapFactory.decodeStream(input);
+
+		        return myBitmap;
+
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		        Log.e(TAG, "Error getting image banana " + e.getMessage().toString());
+		        return null;
+		    }
+		}
 	}
 }

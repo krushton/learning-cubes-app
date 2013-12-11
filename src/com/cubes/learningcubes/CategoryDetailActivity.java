@@ -150,9 +150,7 @@ public class CategoryDetailActivity extends Activity {
 		@Override
 	    protected void onPostExecute(JSONObject categoryObject) {
 	        
-			if (categoryObject != null) {
-				Log.d(TAG, categoryObject.toString());
-			} else {
+			if (categoryObject == null) {
 				Log.d(TAG, "category is null");
 			}
 			

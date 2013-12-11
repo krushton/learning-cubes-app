@@ -34,6 +34,7 @@ public class Lesson {
 	String correctSoundRemoteUrl;
 	String incorrectSoundRemoteUrl;
 	String incorrectSoundLocalUrl;
+	String thumbnailUrl;
 	int downloadStatus;
 	boolean isAdvanced = false;
 	
@@ -50,7 +51,7 @@ public class Lesson {
 			String endSoundRemoteUrl, String endSoundLocalUrl,
 			String correctSoundRemoteUrl, String correctSoundLocalUrl,
 			String incorrectSoundRemoteUrl, String incorrectSoundLocalUrl,
-			int lessonStatus
+			int lessonStatus, String thumbnailUrl
 			) {
 		this.lessonName = lessonName;
 		this.category = category;
@@ -71,8 +72,7 @@ public class Lesson {
 		this.incorrectSoundRemoteUrl = incorrectSoundRemoteUrl;
 		this.incorrectSoundLocalUrl = incorrectSoundLocalUrl;
 		this.downloadStatus = lessonStatus;
-		
-		
+		this.thumbnailUrl = thumbnailUrl;
 		
 		if (questions == null) {
 			this.questions = new ArrayList<Question>();
@@ -96,10 +96,11 @@ public class Lesson {
 			long categoryId, int enableInt, long remoteId, long blockSetId, 
 			ArrayList<Question> questions, float price,
 			int rating, String author) {
+		
 		this(lessonName, description, category, 
 			 categoryId, enableInt, 0, remoteId, blockSetId, 
 			 null, price, rating, author,
-			 "", "", "", "", "", "", "", "",1);
+			 null, null, null, null, null, null, null, null, Lesson.LESSON_AVAILABLE, null);
 	}
 
 	public Question getRandomQuestion() {
@@ -133,7 +134,6 @@ public class Lesson {
 	
 	private boolean hasAnySoundFiles() {
 		
-		Log.d(TAG, "checking sound files...");
 		String[] urls = {
 				startSoundLocalUrl,
 				endSoundLocalUrl,

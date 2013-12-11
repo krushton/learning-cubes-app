@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 53;
+    public static final int DATABASE_VERSION = 54;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -330,6 +330,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	String author = q.getString(q.getColumnIndex(LessonEntry.LESSON_AUTHOR));
     	int rating = q.getInt(q.getColumnIndex(LessonEntry.LESSON_RATING));
+    	String thumbnailUrl = q.getString(q.getColumnIndex(LessonEntry.LESSON_THUMBNAIL_URL));
     	float price = q.getFloat(q.getColumnIndex(LessonEntry.PRICE));
     	Cursor c = db.query(QuestionEntry.TABLE_NAME, null, QuestionEntry.QUESTION_LESSON_ID + " = " + rowId, null, null, null, null);
     	ArrayList<Question> questions = new ArrayList<Question>();
@@ -341,17 +342,14 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	questions.add(question);
         	c.moveToNext();
     	}
-    	Log.d(TAG, startSoundLocalUrl +" localstart");
-    	Log.d(TAG, endSoundLocalUrl +" localend");
-    	Log.d(TAG, correctSoundLocalUrl +" correct");
-    	Log.d(TAG, incorrectSoundLocalUrl +" incorrect");
+
     	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions, price, 
     			rating, author,
     			startSoundRemoteUrl, startSoundLocalUrl,
    			 	endSoundRemoteUrl, endSoundLocalUrl,
    			 	correctSoundRemoteUrl, correctSoundLocalUrl,
    			 	incorrectSoundRemoteUrl, incorrectSoundLocalUrl,
-   			 	lessonDownloadStatus);
+   			 	lessonDownloadStatus, thumbnailUrl);
     }
     
     private Question getQuestionFromCursor(Cursor c) {    	
@@ -522,7 +520,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	values.put(LessonEntry.CORRECT_SOUND_LOCAL_URL, lesson.correctSoundLocalUrl);
     	values.put(LessonEntry.INCORRECT_SOUND_LOCAL_URL, lesson.incorrectSoundLocalUrl);
     	values.put(LessonEntry.LESSON_DOWNLOAD_STATUS, lesson.downloadStatus);
-    	
+    	values.put(LessonEntry.LESSON_THUMBNAIL_URL, lesson.thumbnailUrl);
     	if (lesson.enabled) {
     		values.put(LessonEntry.LESSON_ENABLED, Lesson.LESSON_ENABLED);
     	} else {
@@ -685,7 +683,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 			long id = addQuestion(q);
 			testQuestionIds.add(id);
 		}
-		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
 				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, 

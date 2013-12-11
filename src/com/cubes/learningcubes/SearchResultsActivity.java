@@ -150,8 +150,8 @@ public class SearchResultsActivity extends Activity {
 		@Override
 	    protected void onPostExecute(JSONArray itemsList) {
 	        
-			if (itemsList != null) {
-				Log.d(TAG, itemsList.toString());
+			if (itemsList == null) {
+				Log.e(TAG, "items list is null");
 			}
 			
 			if (dialog.isShowing()) {

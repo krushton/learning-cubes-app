@@ -34,7 +34,6 @@ public class Question {
 	public String getAnswerWithoutSeparators() { 
 		
 		if (answer != null) {
-			Log.d(TAG, answer);
 			return answer.replace("|", "");
 		} else {
 			return "";

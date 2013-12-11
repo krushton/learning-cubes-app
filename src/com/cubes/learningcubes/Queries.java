@@ -61,6 +61,7 @@ public class Queries {
 	    		LessonEntry.INCORRECT_SOUND_REMOTE_URL + TEXT_TYPE + COMMA_SEP +
 	    		LessonEntry.INCORRECT_SOUND_LOCAL_URL + TEXT_TYPE + COMMA_SEP +
 	    		LessonEntry.LESSON_DOWNLOAD_STATUS + INT_TYPE + COMMA_SEP +
+	    		LessonEntry.LESSON_THUMBNAIL_URL + TEXT_TYPE + COMMA_SEP +
 	    		getForeignKeyAssociation(LessonEntry.LESSON_CATEGORY_ID, CategoryEntry.TABLE_NAME, CategoryEntry._ID) +
 	    		getForeignKeyAssociation(LessonEntry.LESSON_BLOCK_SET_ID, BlockSetEntry.TABLE_NAME, BlockSetEntry._ID) + " );";   
 	    
