@@ -83,7 +83,6 @@ public class CategoryDetailActivity extends Activity {
             task.execute(categoryId);
         }
         
-		
 	}
 
 	/**

@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 48;
+    public static final int DATABASE_VERSION = 49;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -114,7 +114,9 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	String text = q.getString(q.getColumnIndex(BlockEntry.BLOCK_TEXT));
     	String tag = q.getString(q.getColumnIndex(BlockEntry.BLOCK_RFID_TAG));
     	int blockSetId = q.getInt(q.getColumnIndex(BlockEntry.BLOCK_BLOCKSET_ID));
-    	return new Block(text, tag, blockSetId, rowId);
+    	String localUrl = q.getString(q.getColumnIndex(BlockEntry.BLOCK_LOCAL_URL));
+    	String remoteUrl = q.getString(q.getColumnIndex(BlockEntry.BLOCK_REMOTE_URL));
+    	return new Block(text, tag, blockSetId, rowId, localUrl, remoteUrl);
     }
     
     public BlockSet getBlockSetById(long rowId) {
@@ -577,7 +579,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	for(char letter = 'A'; letter <= 'Z'; letter++) {
     	    String l = String.valueOf(letter);
-    	    Block b = new Block(l, null, alphaBlockSetId);
+    	    Block b = new Block(l, null, alphaBlockSetId, null, null);
     	    addBlock(b);
     	}
     	
@@ -587,13 +589,13 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	
     	for(int i = 0; i <= 9; i++) {
     	    String num = String.valueOf(i);
-    	    Block b = new Block(num, null, numberSetId);
+    	    Block b = new Block(num, null, numberSetId, null, null);
     	    addBlock(b);
     	}
 
     	for (char c : new char[]{'+', '-', '*', '/'}) {
     		String symb = String.valueOf(c);
-    	    Block b = new Block(symb, null, numberSetId);
+    	    Block b = new Block(symb, null, numberSetId, null, null);
     	    addBlock(b);
     	}
     	
@@ -664,7 +666,8 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		
 		String spellVerbs = "Spelling Verbs";
 		Lesson spellingPlaceLesson = new Lesson(spellVerbs, "Beginning spelling of verb words",
-				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, alphaBlockSetId, null, 0.0f, 5, "Teddy");
+				spellingCategory.name, spellingCategory.id, Lesson.LESSON_DISABLED, -1, 
+				alphaBlockSetId, null, 0.0f, 5, "Fuzzy Logic, Inc.");
 		
 		
 		final long spellingLesson2Id = addLesson(spellingPlaceLesson);

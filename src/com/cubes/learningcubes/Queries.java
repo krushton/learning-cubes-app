@@ -35,6 +35,8 @@ public class Queries {
 	    		BlockEntry.BLOCK_TEXT + TEXT_TYPE + COMMA_SEP +
 	    		BlockEntry.BLOCK_RFID_TAG + TEXT_TYPE + COMMA_SEP +
 	    		BlockEntry.BLOCK_BLOCKSET_ID + INT_TYPE + COMMA_SEP + 
+	    		BlockEntry.BLOCK_LOCAL_URL + TEXT_TYPE + COMMA_SEP + 
+	    		BlockEntry.BLOCK_REMOTE_URL + TEXT_TYPE + COMMA_SEP + 
 	    		getForeignKeyAssociation(BlockEntry.BLOCK_BLOCKSET_ID, BlockSetEntry.TABLE_NAME, BlockSetEntry._ID) + " );";
 		    
 	    static final String CREATE_LESSON_TABLE = "CREATE TABLE " + LessonEntry.TABLE_NAME +

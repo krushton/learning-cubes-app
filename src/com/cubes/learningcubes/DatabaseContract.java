@@ -68,6 +68,8 @@ public final class DatabaseContract {
         public static final String BLOCK_TEXT = "text";
         public static final String BLOCK_RFID_TAG = "tag";
         public static final String BLOCK_BLOCKSET_ID = "blocksetid";
+        public static final String BLOCK_REMOTE_URL = "blockremoteurl";
+        public static final String BLOCK_LOCAL_URL = "blocklocalurl";
     }
     
     public static abstract class CategoryEntry implements BaseColumns {
