@@ -125,12 +125,21 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
+            android:id="@+id/lesson_blockset_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lesson_description"
+            android:text="Uses blockset"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+        
+        <TextView
             android:id="@+id/lesson_questions_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:text="Questions"
-            android:layout_below="@+id/lesson_number_downloads"
+            android:layout_below="@+id/lesson_blockset_name"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="5dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />

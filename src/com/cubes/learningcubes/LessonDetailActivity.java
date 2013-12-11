@@ -56,6 +56,7 @@ public class LessonDetailActivity extends Activity {
 	private Button downloadButton;
 	private Button deleteButton;
 	private boolean isAlreadyDownloaded = true;
+	private BlockSet blockSet;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +80,7 @@ public class LessonDetailActivity extends Activity {
 		if (localId != 0) {
 			isAlreadyDownloaded = true;
 			lesson = db.getLessonById(localId);
+			blockSet = db.getBlockSetById(lesson.blockSetId);
 			loadLessonDetails();
 		} else {
 			isAlreadyDownloaded = false;
@@ -106,6 +108,10 @@ public class LessonDetailActivity extends Activity {
 		
 		TextView lessonCreator = (TextView)findViewById(R.id.lesson_author);
 		lessonCreator.setText(lesson.author);
+		
+		TextView lessonBlockSetTv = (TextView)findViewById(R.id.lesson_blockset_name);
+		lessonBlockSetTv.setText(blockSet.name);
+	
 		
 		ListView lv = (ListView)findViewById(R.id.list);
 		adapter = new LessonQuestionListAdapter(this, lesson.questionsAsArray());
@@ -379,6 +385,18 @@ public class LessonDetailActivity extends Activity {
 	        	if (result.has("rating")) {
 	        		try {
 						lesson.rating = result.getInt("rating");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        	
+	        	if (result.has("block_set")) {
+	        		try {
+						JSONObject set = result.getJSONObject("block_set");
+						String title = set.getString("title");
+						long remoteId = set.getLong("id");
+						//if (db.getBlockSetByRemoteId(remoteId));
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

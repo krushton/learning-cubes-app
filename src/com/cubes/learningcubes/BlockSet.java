@@ -8,11 +8,12 @@ public class BlockSet {
 	ArrayList<Block> set;
 	String name;
 	long id;
+	long remoteId;
 	boolean enabled;
 	static int ENABLED = 1;
 	static int DISABLED = 0;
 	
-	public BlockSet(String name, boolean enabled, ArrayList<Block> set, long id) {
+	public BlockSet(String name, boolean enabled, ArrayList<Block> set, long id, long remoteId) {
 		this.id = id;
 		this.name = name;
 		this.enabled = enabled;
@@ -21,10 +22,11 @@ public class BlockSet {
 		} else {
 			this.set = set;
 		}
+		this.remoteId = remoteId;
 	}
 	
 	public BlockSet(String name, boolean enabled, ArrayList<Block> set) {
-		this(name, enabled, set, 0);
+		this(name, enabled, set, 0, 0);
 	}
 	
 	public void add(Block newBlock) {

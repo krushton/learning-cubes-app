@@ -28,6 +28,7 @@ public class Queries {
 	 	 static final String CREATE_BLOCK_SET_TABLE = "CREATE TABLE " + BlockSetEntry.TABLE_NAME +
 		    		" (" + BlockSetEntry._ID + " INTEGER PRIMARY KEY," +
 		    		BlockSetEntry.BLOCK_SET_ENABLED + INT_TYPE + COMMA_SEP +
+		    		BlockSetEntry.BLOCK_SET_REMOTE_ID + INT_TYPE + COMMA_SEP +
 		    		BlockSetEntry.BLOCK_SET_NAME + TEXT_TYPE + " );";
 		    
 	    static final String CREATE_BLOCK_TABLE = "CREATE TABLE " + BlockEntry.TABLE_NAME +

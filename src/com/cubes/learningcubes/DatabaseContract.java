@@ -61,6 +61,7 @@ public final class DatabaseContract {
         public static final String TABLE_NAME = "blockset";
         public static final String BLOCK_SET_NAME = "name";
         public static final String BLOCK_SET_ENABLED = "enabled";
+        public static final String BLOCK_SET_REMOTE_ID = "blocksetremoteid";
     }
     
     public static abstract class BlockEntry implements BaseColumns {

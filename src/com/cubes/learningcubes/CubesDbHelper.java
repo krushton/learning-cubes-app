@@ -125,11 +125,12 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	q.moveToFirst();
     	return getBlockSetFromCursor(q);
     }
-    
+
     private BlockSet getBlockSetFromCursor(Cursor q) {
     	String name = q.getString(q.getColumnIndex(BlockSetEntry.BLOCK_SET_NAME));
     	long rowId = q.getInt(q.getColumnIndex(BlockSetEntry._ID));
     	int enabledInt = q.getInt(q.getColumnIndex(BlockSetEntry.BLOCK_SET_ENABLED));
+    	int remoteId = q.getInt(q.getColumnIndex(BlockSetEntry.BLOCK_SET_REMOTE_ID));
     	boolean enabled = false;
     	if (enabledInt == BlockSet.ENABLED) {
     		enabled = true;
@@ -143,7 +144,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	blocks.add(block);
         	c.moveToNext();
     	}
-    	return new BlockSet(name, enabled, blocks, rowId);
+    	return new BlockSet(name, enabled, blocks, rowId, remoteId);
     }
     
     public ArrayList<Lesson> getLessons() {
@@ -517,7 +518,9 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	ContentValues values = new ContentValues();
     	values.put(BlockEntry.BLOCK_TEXT, block.text);
     	values.put(BlockEntry.BLOCK_RFID_TAG, block.tagId);
-    	values.put(BlockEntry.BLOCK_BLOCKSET_ID, block.blockSetId);    	
+    	values.put(BlockEntry.BLOCK_BLOCKSET_ID, block.blockSetId);   
+    	values.put(BlockEntry.BLOCK_LOCAL_URL, block.localUrl);
+    	values.put(BlockEntry.BLOCK_REMOTE_URL, block.remoteUrl);
     	return db.insert(BlockEntry.TABLE_NAME, null, values);
     }
     
@@ -534,6 +537,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	getDbIfNecessary();
     	ContentValues values = new ContentValues();
     	values.put(BlockSetEntry.BLOCK_SET_NAME, set.name);
+    	values.put(BlockSetEntry.BLOCK_SET_REMOTE_ID, set.remoteId);
     	if (set.enabled) {
     		values.put(BlockSetEntry.BLOCK_SET_ENABLED, BlockSet.ENABLED);
     	} else {
