@@ -1,10 +1,22 @@
 package com.cubes.learningcubes;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+
+import com.cubes.learningcubes.DatabaseContract.LessonEntry;
+import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
+
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +31,7 @@ import android.widget.TextView;
 public class SessionDetailActivity extends Activity {
 	
 	private CubesDbHelper db;
+	private Session session;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +42,7 @@ public class SessionDetailActivity extends Activity {
 		db = CubesDbHelper.getInstance(this);
 		
 		long sessionId = getIntent().getLongExtra("sessionId", 0);
-		Session session = db.getSessionById(sessionId);
+		session = db.getSessionById(sessionId);
 		
 		TextView sessionDateTextView = (TextView)findViewById(R.id.session_date);
 		sessionDateTextView.setText(session.getDate());
@@ -84,6 +97,36 @@ public class SessionDetailActivity extends Activity {
 			values[i] = list.get(i);
 		}
 		return values;
+	}
+	
+	public void removeSession(View v) {
+		
+		new AlertDialog.Builder(SessionDetailActivity.this)
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setTitle(R.string.warning)
+        .setMessage(R.string.delete_session_message)
+        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            	// first have to delete related logs
+        		for (LogItem log : session.sessionLog) {
+        			db.delete(SessionLogEntry.TABLE_NAME, log.id);
+        		}
+     
+        		//ok now can delete the session
+        		db.delete(SessionEntry.TABLE_NAME, session.id);
+            
+            	Intent intent = new Intent(SessionDetailActivity.this, SessionsActivity.class);
+            	startActivity(intent);
+            	
+            }
+
+        })
+        .setNegativeButton(R.string.cancel, null)
+        .show();
+
 	}
 
 	private class LogListAdapter extends ArrayAdapter<LogItem>{

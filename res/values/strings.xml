@@ -53,5 +53,7 @@
     <string name="title_activity_category_detail">Category</string>
     <string name="lesson_enabled_message">Cannot delete the active lesson.</string>
     <string name="ok">OK</string>
+    <string name="delete_session_message">Are you sure you would like to delete this session? This cannot be undone.</string>
+    
 
 </resources>
