@@ -127,6 +127,9 @@
         <service
             android:name="com.cubes.learningcubes.LessonDownloadService"
             android:exported="false" />
+        <service
+            android:name="com.cubes.learningcubes.BlockSetDownloadService"
+            android:exported="false" />
 
         <activity
             android:name="com.cubes.learningcubes.LessonDetailActivity"

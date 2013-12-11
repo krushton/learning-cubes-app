@@ -12,6 +12,7 @@ public class BlockSet {
 	boolean enabled;
 	static int ENABLED = 1;
 	static int DISABLED = 0;
+	boolean hasSound = false;
 	
 	public BlockSet(String name, boolean enabled, ArrayList<Block> set, long id, long remoteId) {
 		this.id = id;
@@ -22,11 +23,16 @@ public class BlockSet {
 		} else {
 			this.set = set;
 		}
+		hasSound = checkIfHasSound();
 		this.remoteId = remoteId;
 	}
 	
 	public BlockSet(String name, boolean enabled, ArrayList<Block> set) {
 		this(name, enabled, set, 0, 0);
+	}
+	
+	public BlockSet(String name, boolean enabled, long remoteId) {
+		this(name, enabled, null, 0, remoteId);
 	}
 	
 	public void add(Block newBlock) {
@@ -59,5 +65,16 @@ public class BlockSet {
 	
 	public int size() {
 		return set.size();
+	}
+	
+	private boolean checkIfHasSound() {
+		if (set != null) {
+			for (Block b : set) {
+				if (b.localUrl != null && !b.localUrl.isEmpty()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

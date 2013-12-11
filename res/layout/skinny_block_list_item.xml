@@ -7,15 +7,24 @@
     <TextView
         android:id="@+id/block_text"
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="4"
         android:layout_height="wrap_content"
         android:text="Small Text"
         android:padding="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ImageView
+        android:id="@+id/block_has_sound_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:alpha=".5"
+        android:src="@drawable/music_note" />
     
     <TextView
         android:id="@+id/block_id"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Small Text"

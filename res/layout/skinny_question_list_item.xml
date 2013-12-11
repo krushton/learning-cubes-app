@@ -6,9 +6,10 @@
 
     <TextView
         android:id="@+id/question"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_height="wrap_content"
+        android:layout_marginRight="6dp"
         android:text="Question"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     
@@ -19,5 +20,14 @@
         android:layout_below="@+id/question"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+    
+    <ImageView
+        android:id="@+id/question_has_sound_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginTop="0dp"
+        android:layout_toRightOf="@+id/question"
+        android:alpha=".5"
+        android:src="@drawable/music_note" />
 
 </RelativeLayout>

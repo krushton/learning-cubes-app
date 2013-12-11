@@ -114,7 +114,7 @@ public class LessonDownloadService extends IntentService {
 	   ContentValues values = new ContentValues();
 	   values.put(LessonEntry.LESSON_DOWNLOAD_STATUS, 1);
 	   db.updateValues(LessonEntry.TABLE_NAME, lesson.id, values);
-	   sayAToast("Lesson " + lesson.lessonName + " downloaded successfully.");
+	   sayAToast("Lesson \"" + lesson.lessonName + "\" downloaded successfully.");
    }
    
    private String downloadAudioFile(String urlString, String fileName ) {

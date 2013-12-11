@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 51;
+    public static final int DATABASE_VERSION = 53;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -99,7 +99,7 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	q.moveToFirst();
     	return getBlockFromCursor(q);
     }
-    
+
     public Question getQuestionById(long rowId) {
     	getDbIfNecessary();
     	String condition = QuestionEntry._ID + " = " + rowId;
@@ -117,6 +117,20 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     	String localUrl = q.getString(q.getColumnIndex(BlockEntry.BLOCK_LOCAL_URL));
     	String remoteUrl = q.getString(q.getColumnIndex(BlockEntry.BLOCK_REMOTE_URL));
     	return new Block(text, tag, blockSetId, rowId, localUrl, remoteUrl);
+    }
+    
+    public BlockSet getBlockSetByRemoteId(long remoteId) {
+    	Log.d(TAG, "QUERYING DATABASE FOR BLOCK SET WITH REMOTE ID: " + remoteId);
+    	getDbIfNecessary();
+    	Cursor q = db.query(BlockSetEntry.TABLE_NAME, null, BlockSetEntry.BLOCK_SET_REMOTE_ID + " = " + remoteId, null, null, null, null);
+    	
+    	if (q.getCount() > 0) {
+    		q.moveToFirst();
+        	return getBlockSetFromCursor(q);
+    	} else {
+    		return null;
+    	}
+    	
     }
     
     public BlockSet getBlockSetById(long rowId) {
@@ -327,6 +341,10 @@ public class CubesDbHelper extends SQLiteOpenHelper {
         	questions.add(question);
         	c.moveToNext();
     	}
+    	Log.d(TAG, startSoundLocalUrl +" localstart");
+    	Log.d(TAG, endSoundLocalUrl +" localend");
+    	Log.d(TAG, correctSoundLocalUrl +" correct");
+    	Log.d(TAG, incorrectSoundLocalUrl +" incorrect");
     	return new Lesson(name, description, category, categoryId, enabled, rowId, remoteId, setId, questions, price, 
     			rating, author,
     			startSoundRemoteUrl, startSoundLocalUrl,

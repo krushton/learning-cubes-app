@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -136,6 +137,12 @@ public class LessonsActivity extends Activity {
 	      TextView description = (TextView)listItem.findViewById(R.id.lesson_description);
 	      description.setText(values[position].description);
 	     
+	      ImageView musicNote = (ImageView)listItem.findViewById(R.id.lesson_has_sound_icon);
+          if (values[position].isAdvanced) {
+          	musicNote.setVisibility(View.VISIBLE);
+          } else {
+          	musicNote.setVisibility(View.GONE);
+          }
 	      
           ToggleButton tb = (ToggleButton)listItem.findViewById(R.id.lesson_toggle);
           tb.setChecked(values[position].enabled);

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -134,6 +135,14 @@ public class BlockSetDetailActivity extends Activity {
 	            	idText.setText(getResources().getString(R.string.unmapped));
 	            } else {
 	            	idText.setText(values[position].tagId);
+	            }
+	            
+	            String localUrl = values[position].localUrl;
+	            ImageView musicNote = (ImageView)listItem.findViewById(R.id.block_has_sound_icon);
+	            if (localUrl != null && !localUrl.isEmpty()) {
+	            	musicNote.setVisibility(View.VISIBLE);
+	            } else {
+	            	musicNote.setVisibility(View.GONE);
 	            }
 		        
 	            listItem.setTag(values[position].id);

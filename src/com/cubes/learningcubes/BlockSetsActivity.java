@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -112,9 +113,15 @@ public class BlockSetsActivity extends Activity {
           View listItem = inflater.inflate(R.layout.blockset_list_item, parent, false);
           listItem.setTag(values[position].id);
         
-          //score circle
           TextView name = (TextView)listItem.findViewById(R.id.block_set_name);
           name.setText(values[position].name);
+          
+          ImageView musicNote = (ImageView)listItem.findViewById(R.id.blockset_has_sound_icon);
+          if (values[position].hasSound) {
+          	musicNote.setVisibility(View.VISIBLE);
+          } else {
+          	musicNote.setVisibility(View.GONE);
+          }
           
           ToggleButton tb = (ToggleButton)listItem.findViewById(R.id.blockset_toggle);
           tb.setChecked(values[position].enabled);

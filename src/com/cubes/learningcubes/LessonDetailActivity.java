@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -15,11 +14,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.cubes.learningcubes.DatabaseContract.LessonEntry;
-import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
-import com.cubes.learningcubes.DatabaseContract.SessionEntry;
-import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,10 +34,16 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+
+import com.cubes.learningcubes.DatabaseContract.LessonEntry;
+import com.cubes.learningcubes.DatabaseContract.QuestionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionEntry;
+import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 
 public class LessonDetailActivity extends Activity {
@@ -110,7 +110,8 @@ public class LessonDetailActivity extends Activity {
 		lessonCreator.setText(lesson.author);
 		
 		TextView lessonBlockSetTv = (TextView)findViewById(R.id.lesson_blockset_name);
-		lessonBlockSetTv.setText(blockSet.name);
+		lessonBlockSetTv.setText("Uses blockset \"" + blockSet.name + "\"");
+		
 	
 		
 		ListView lv = (ListView)findViewById(R.id.list);
@@ -144,20 +145,44 @@ public class LessonDetailActivity extends Activity {
 			            public void onClick(DialogInterface dialog, int which) {
 			            	Log.d(TAG, "About to download new lesson");
 			            	
+			            	long bsId = 0;
+			            	boolean isNewBlockSet = false;
+			            	
+			            	if (blockSet.id == 0) {
+			            		
+			            		//add block set if we needed to
+			            		bsId = db.addBlockSet(blockSet);
+			            		blockSet.id = bsId;
+			            		isNewBlockSet = true;
+			            	} else {
+			            		bsId = blockSet.id;
+			            	}
+			            	
+			            	//set the block set id, if this is a new blockset will need to download that as well
+			            	lesson.blockSetId = bsId;
+			            	
 			            	//save lesson to db
 			            	long savedId = db.addLesson(lesson);
 			            	
+			            	//add questions as well
 			            	for (Question q : lesson.questions) {
 			            		q.lessonId = savedId;
 			            		db.addQuestion(q);
 			            	}
+			            	
 			            	if (lesson.isAdvanced) {
 			            		lesson.downloadStatus = Lesson.LESSON_AVAILABLE;
-			            	}else {
+			            	} else {
 			            		lesson.downloadStatus = Lesson.LESSON_DOWNLOADING;
-			            		Intent serviceIntent = new Intent(LessonDetailActivity.this, LessonDownloadService.class);
-				            	serviceIntent.putExtra("lessonId", savedId);
-				            	startService(serviceIntent);
+			            		Intent first = new Intent(LessonDetailActivity.this, LessonDownloadService.class);
+			            		first.putExtra("lessonId", savedId);
+				            	startService(first);
+			            	}
+			            	
+			            	if (isNewBlockSet) {
+			            		Intent second = new Intent(LessonDetailActivity.this, BlockSetDownloadService.class);
+			            		second.putExtra("blockSetId", blockSet.id);
+				            	startService(second);
 			            	}
 			            	
 			            	finish();  	
@@ -311,7 +336,7 @@ public class LessonDetailActivity extends Activity {
         public LessonQuestionListAdapter(Context context, Question[] set) {
                 
         //call the super class constructor and provide the ID of the resource to use instead of the default list view item
-          super(context, R.layout.skinny_lesson_list_item, set);
+          super(context, R.layout.skinny_question_list_item, set);
           this.context = context;
           this.values = set;
         }
@@ -321,7 +346,7 @@ public class LessonDetailActivity extends Activity {
         public View getView(int position, View convertView, ViewGroup parent) {
 
           LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-          View listItem = inflater.inflate(R.layout.skinny_lesson_list_item, parent, false);
+          View listItem = inflater.inflate(R.layout.skinny_question_list_item, parent, false);
         
           TextView text = (TextView)listItem.findViewById(R.id.question);
           text.setText(values[position].text);
@@ -329,8 +354,14 @@ public class LessonDetailActivity extends Activity {
           TextView answer = (TextView)listItem.findViewById(R.id.question_answer);
           answer.setText(values[position].getAnswerWithoutSeparators());
          
+          ImageView icon = (ImageView)listItem.findViewById(R.id.question_has_sound_icon);
+          if (values[position].localUrl != null && !values[position].localUrl.isEmpty()) {
+        	  icon.setVisibility(View.VISIBLE);
+          } else {
+        	  icon.setVisibility(View.GONE);
+          }
           return listItem;
-        
+          
         }
         
 }
@@ -394,9 +425,14 @@ public class LessonDetailActivity extends Activity {
 	        	if (result.has("block_set")) {
 	        		try {
 						JSONObject set = result.getJSONObject("block_set");
-						String title = set.getString("title");
 						long remoteId = set.getLong("id");
-						//if (db.getBlockSetByRemoteId(remoteId));
+						BlockSet existing = db.getBlockSetByRemoteId(remoteId);
+						if (existing != null) {
+							blockSet = existing;
+						} else {
+							String title = set.getString("title");
+							blockSet = new BlockSet(title, false, remoteId);
+						}
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

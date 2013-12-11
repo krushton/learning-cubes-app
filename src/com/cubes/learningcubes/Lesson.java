@@ -3,6 +3,8 @@ package com.cubes.learningcubes;
 import java.util.ArrayList;
 import java.util.Random;
 
+import android.util.Log;
+
 /* Model class representing a lesson */
 
 public class Lesson {
@@ -70,15 +72,18 @@ public class Lesson {
 		this.incorrectSoundLocalUrl = incorrectSoundLocalUrl;
 		this.downloadStatus = lessonStatus;
 		
-		if (hasAnySoundFiles()) {
-			this.isAdvanced = true;
-		}
+		
 		
 		if (questions == null) {
 			this.questions = new ArrayList<Question>();
 		} else {
 			this.questions = questions;
 		}
+		
+		if (hasAnySoundFiles()) {
+			this.isAdvanced = true;
+		}
+		
 		if (enableInt == LESSON_ENABLED) {
 			this.enabled = true;
 		} else {
@@ -128,15 +133,26 @@ public class Lesson {
 	
 	private boolean hasAnySoundFiles() {
 		
+		Log.d(TAG, "checking sound files...");
 		String[] urls = {
-				startSoundRemoteUrl,
-				endSoundRemoteUrl,
-				correctSoundRemoteUrl,
-				incorrectSoundRemoteUrl
+				startSoundLocalUrl,
+				endSoundLocalUrl,
+				correctSoundLocalUrl,
+				incorrectSoundLocalUrl
 		};
 		for (String url : urls) {
+			
 			if (url != null && !url.isEmpty()) {
 				return true;
+			} 
+		}
+		if (questions != null) {
+		
+			for (Question q : questions) {
+	
+				if (q != null && q.localUrl != null && !q.localUrl.isEmpty()) {
+					return true;
+				}
 			}
 		}
 		return false;

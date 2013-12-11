@@ -133,6 +133,7 @@ public class MainActivity extends Activity {
 	      
 	      ToggleButton tb = (ToggleButton)listItem.findViewById(R.id.service_toggle);
 	      
+	      
 	      if (String.valueOf(values[position]).contains("Learning Service")) {
 
 	          tb.setOnClickListener(new OnClickListener() {
@@ -181,7 +182,10 @@ public class MainActivity extends Activity {
 	    	 
 	      } else {
 	    	  //hide toggle button
-	    	  tb.setVisibility(View.GONE);
+	    	  if (tb != null) {
+	    		  tb.setVisibility(View.GONE);
+	    	  }
+	    	 
 	      }
 	     
 	      return listItem;

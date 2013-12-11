@@ -76,7 +76,7 @@ public class CategoryDetailActivity extends Activity {
 		lessons.clear();
 		Intent intent = getIntent();
         String categoryName = intent.getStringExtra("categoryName");
-        getActionBar().setTitle("Browse category: " + categoryName);
+        getActionBar().setTitle(categoryName + " Lessons");
        
         int categoryId = intent.getIntExtra("remoteCategoryId", 0);
         if (categoryId != 0) {
