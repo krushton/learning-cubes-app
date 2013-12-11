@@ -26,10 +26,8 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity {
 	private String[] listItems = { "Session History", "Statistics", "Block Sets", "Lessons", "Quick Scan", "Start Learning Service" };
 
-	private boolean serviceIsRunning = false;
-	private final String SERVICE_KEY = "serviceIsRunning";
-	private SharedPreferences prefs;
-	private CheckServiceRunningTask task;
+	public boolean serviceIsRunning = false;
+	public static final String SERVICE_KEY = "serviceIsRunning";
 	private ToggleButton serviceToggleButton;
 	private final String TAG = "MainActivity";
 	
@@ -38,11 +36,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
                
-        prefs = getPreferences(Activity.MODE_PRIVATE);
-        if (prefs.contains("serviceRunning")) {
-        	serviceIsRunning = prefs.getBoolean(SERVICE_KEY, false);
-        }
-        
         ListView lv = (ListView)findViewById(R.id.list);
         lv.setAdapter(new MainListAdapter(this, listItems));
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -82,8 +75,7 @@ public class MainActivity extends Activity {
         
         getActionBar().setDisplayShowTitleEnabled(false);
     }
-
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -91,22 +83,7 @@ public class MainActivity extends Activity {
         return true;
     }
     
-    private class CheckServiceRunningTask extends TimerTask {
-
-		@Override
-		public void run() {
-			if (prefs.contains("serviceRunning")) {
-				boolean running = prefs.getBoolean("serviceRunning", false);
-				serviceToggleButton.setActivated(running); 
-				if (!running) {
-					task.cancel();
-				}
-			}
-			
-		}
-    	
-    }
-    
+  
     private class MainListAdapter extends ArrayAdapter<String>{
 
 	    private final Context context;
@@ -142,11 +119,9 @@ public class MainActivity extends Activity {
 						
 						serviceToggleButton = (ToggleButton)v;
 						Intent intent = new Intent(MainActivity.this, LearningService.class);
-						final SharedPreferences.Editor editor = prefs.edit();
 						
 						if (serviceIsRunning) {
 							Log.d(TAG, "STOPPING SERVICE");
-							editor.putBoolean(SERVICE_KEY, false);
 							serviceIsRunning = false;
 							stopService(intent);
 						} else {
@@ -163,11 +138,7 @@ public class MainActivity extends Activity {
 						            startActivityForResult(enableBluetooth, 1);
 							    } else {
 
-									editor.putBoolean(SERVICE_KEY, true);
 									serviceIsRunning = true;
-									Timer timer = new Timer();
-									task = new CheckServiceRunningTask();
-									timer.schedule(task, 1000, 1000);
 									startService(intent);
 							    }
 							    

@@ -22,12 +22,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
@@ -63,6 +61,8 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	private boolean bluetoothReady = false;
 	private boolean textToSpeechReady = false;
 	
+	private boolean lessonIsOver = false;
+	
 	private Random random = new Random();
 
 	private BluetoothDevice mDevice;
@@ -85,17 +85,19 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 
     @Override
     public void onStart(Intent intent, int startId) {
+    	
     	db = CubesDbHelper.getInstance(this);
 		lesson = db.getActiveLesson();
 		tts = new TextToSpeech(this, this);
-		tts.setPitch(.8f);
-		tts.setSpeechRate(.6f);
+		tts.setPitch(1f);
+		tts.setSpeechRate(.8f);
 		mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 		
 		
         if (mBTAdapter == null)
         {
             Toast.makeText(this, "Bluetooth cannot be initialized.", Toast.LENGTH_SHORT).show();
+            
             stopSelf();
         }
         
@@ -161,11 +163,13 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	
 	public void sayEndingLines() {
 		//start startup sequence
+		
 		if (lesson.isAdvanced && lesson.endSoundLocalUrl != null && checkIfFileExistsAndHasData(lesson.endSoundLocalUrl)) {
 			speakSound(lesson.endSoundLocalUrl);
 		} else {
-			speakText("The next lesson is " + lesson.endSoundLocalUrl);
+			speakText("The lesson is complete. Great job!");
 			pause(1000);	
+			
 		}	
 		
 		Timer timer = new Timer();
@@ -234,24 +238,16 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	 private class QuestionTask extends TimerTask {
 		 public void run() { 
 			 
+			if (lessonIsOver) {
+				this.cancel();
+			}
+			
 			if (!waitingForAnswer) {
 				
 				if (lesson.isAdvanced && currentQuestion.localUrl != null && !currentQuestion.localUrl.isEmpty()
 						&& checkIfFileExistsAndHasData(currentQuestion.localUrl)) {
-					Log.d(TAG, " NOW SAYING IN REAL SOUND: " +  currentQuestion.localUrl);
 					speakSound(currentQuestion.localUrl);
 				} else {
-					Log.d(TAG, "Can't load current question sound " + currentQuestion.text + " because");
-					if (!lesson.isAdvanced) {
-						Log.d(TAG, "Lesson is not advanced");
-					} 
-					if (currentQuestion.localUrl == null) {
-						Log.d(TAG, "Local url is null");
-					}
-					if (currentQuestion.localUrl.isEmpty()) {
-						Log.d(TAG, "local url is empty");
-					}
-					
 					speakText(currentQuestion.text);
 				}
 				waitingForAnswer = true;
@@ -262,7 +258,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				for (String item : output) {
 					Log.d(TAG, "output item: " +item);
 				}
-				Log.d(TAG, "OUTPUT LENGTH IS " + output.size());
 				
 				if (output.size() > lastKnownOutputLength) {
 					Block block = db.getBlockByTagValue(output.get(output.size()-1));
@@ -307,8 +302,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 							int index = random.nextInt(correct.length);
 							speakText(correct[index]);
 						}
-						
-						numberCorrect++;
 					} else {
 						if (lesson.isAdvanced && lesson.incorrectSoundLocalUrl != null & !lesson.incorrectSoundLocalUrl.isEmpty()
 								&& checkIfFileExistsAndHasData(lesson.incorrectSoundLocalUrl)) {
@@ -326,9 +319,12 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 					}
 					output.clear();
 					lastKnownOutputLength = 0;
+					
 					if (lesson.questions.size() == questionIndex+1) {
 						Log.w(TAG, "LESSON IS OVER");
+						lessonIsOver = true;
 						sayEndingLines();
+						this.cancel();
 						
 					} else {
 						questionIndex++;
@@ -345,13 +341,6 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	 
 	 private void endGame() {
 		 Context ctx = getApplicationContext();
-		 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-		 
-         if (prefs.contains("serviceRunning")) {
-        	 prefs.edit().putBoolean("serviceRunning", false);
-         } else {
-        	 prefs.edit().putBoolean("serviceRunning", false);
-         }
          
 		 if (mBTSocket != null && bluetoothReady) {
 				new DisConnectBT().execute();

@@ -26,7 +26,7 @@ import com.cubes.learningcubes.DatabaseContract.SessionLogEntry;
 
 public class CubesDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 56;
+    public static final int DATABASE_VERSION = 57;
     public static final String DATABASE_NAME = "Cubes.db";
     private SQLiteDatabase db;
     private Random random;
@@ -673,8 +673,6 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		HashMap<String,String> testQuestions = new HashMap<String, String>();
 		
 		testQuestions.put("How do you spell cat?", "c|a|t");
-		testQuestions.put("How do you spell tab?", "t|a|b");
-		testQuestions.put("How do you spell bat?", "b|a|t");
 		
 		ArrayList<Long> testQuestionIds = new ArrayList<Long>();
 		for (String key : testQuestions.keySet()) {
