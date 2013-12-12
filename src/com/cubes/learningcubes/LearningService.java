@@ -192,8 +192,9 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	 
 	 private boolean isSimilarEnough(String testId, String correctId) {
 
+		 Log.d(TAG, "Testing similarity: " + testId + " " + correctId); 
 		 testId = testId.toLowerCase().trim();
-		 correctId = correctId.toLowerCase();
+		 correctId = correctId.toLowerCase().trim();
 		 
 		 int commonChars = 0;
 		 for (int i = 0; i < testId.length(); i++) {
@@ -207,6 +208,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 			 return true;
 		 } 
 		 */
+		 Log.d(TAG, "common characters: " + commonChars);
 		 if (commonChars == testId.length()) {
 			 return true;
 		 }
@@ -225,6 +227,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				p = Pattern.quote("&");
 			}
 		 currentQuestionTags = db.getTagsForValues(currentQuestion.answer.split(p));
+
 		 questionTask = new QuestionTask();
 		 Timer timer = new Timer();
 		 timer.schedule(questionTask, 2000, 1000);
@@ -262,13 +265,16 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 				}
 				waitingForAnswer = true;
 				
+				
 			} else {
 				
+				Log.d(TAG, "Waiting for answer...");
 				for (String item : output) {
 					Log.d(TAG, "output item: " +item);
 				}
 				
 				if (output.size() > lastKnownOutputLength) {
+					Log.d(TAG, "tag value: " + output.get(output.size()-1));
 					Block block = db.getBlockByTagValue(output.get(output.size()-1));
 					if (block != null) {
 						if (lesson.isAdvanced && block.localUrl != null && !block.localUrl.isEmpty()
@@ -371,6 +377,7 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	 }
 	 
 	 private boolean similarTagFoundInList(String tag) {
+		 Log.d(TAG, "current question tags length " + currentQuestionTags.length );
 		 for (int i = 0; i < currentQuestionTags.length; i++) {
 			 String compareTag = currentQuestionTags[i];
 			 if (isSimilarEnough(tag, compareTag)) {

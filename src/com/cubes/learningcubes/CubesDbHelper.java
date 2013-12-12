@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -362,6 +363,16 @@ public class CubesDbHelper extends SQLiteOpenHelper {
 		String text = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_TEXT));
     	String answer = c.getString(c.getColumnIndex(QuestionEntry.QUESTION_ANSWER));
     	return new Question(text, answer, id, lessonId, remoteUrl, localUrl);
+    }
+    
+    public boolean checkIfLessonExistsAlready(long remoteId) {
+    	ArrayList<Lesson> lessons = getLessons();
+    	for (Lesson l : lessons) {
+    		if (l.remoteId == remoteId) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     public Session getSessionById(long rowId) {
@@ -832,8 +843,9 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     
     private boolean isSimilarEnough(String testId, String correctId) {
 
-		 testId = testId.toLowerCase().trim();
-		 correctId = correctId.toLowerCase().trim();
+    	Log.d(TAG, "Testing similarity: " + testId + " " + correctId); 
+		 testId = testId.toLowerCase(Locale.ENGLISH).trim();
+		 correctId = correctId.toLowerCase(Locale.ENGLISH).trim();
 		 int commonChars = 0;
 		 for (int i = 0; i < testId.length(); i++) {
 			 if (correctId.contains(""+testId.charAt(i))) {

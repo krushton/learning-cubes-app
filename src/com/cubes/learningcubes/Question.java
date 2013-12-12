@@ -34,7 +34,12 @@ public class Question {
 	public String getAnswerWithoutSeparators() { 
 		
 		if (answer != null) {
-			return answer.replace("|", "");
+			if (answer.contains("|")) {
+				return answer.replace("|", "");
+			} else {
+				return answer.replace("&", ", ");
+			}
+			
 		} else {
 			return "";
 		}

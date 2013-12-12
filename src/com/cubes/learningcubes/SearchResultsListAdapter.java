@@ -17,6 +17,7 @@ public class SearchResultsListAdapter extends BaseAdapter {
     private final ArrayList<Lesson> values;
     private LayoutInflater inflater;
     private Random random;
+    private CubesDbHelper db;
 
     public SearchResultsListAdapter(Context context, ArrayList<Lesson> values) {
             
@@ -25,6 +26,7 @@ public class SearchResultsListAdapter extends BaseAdapter {
       this.values = values;
       random = new Random();
       inflater = LayoutInflater.from(context); 
+      db = CubesDbHelper.getInstance(context);
     }
     
     @Override
@@ -60,9 +62,17 @@ public class SearchResultsListAdapter extends BaseAdapter {
       lessonDescription.setText(values.get(position).description);
 
       TextView lessonPrice = (TextView)listItem.findViewById(R.id.lesson_price);
-      lessonPrice.setText(values.get(position).getPrice());
+      
+      
+      if (db.checkIfLessonExistsAlready(lesson.remoteId)) {
+    	  lessonPrice.setText("Installed!");
+      } else {
+    	  lessonPrice.setText(values.get(position).getPrice());
+      }
       
       listItem.setTag(lesson.remoteId);
+      
+      
       
       int starValue = random.nextInt(5);
       int resId = 0;
