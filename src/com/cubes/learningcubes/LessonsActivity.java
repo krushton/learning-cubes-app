@@ -165,7 +165,8 @@ public class LessonsActivity extends Activity {
 	      	  for (Lesson lesson : values) {
 	      		  if (lesson.id == id) {
 	      			lesson.enabled = true;
-	      			  db.changeEnabledLesson(lesson.id);
+	      			db.changeEnabledLesson(lesson.id);
+	      			db.changeEnabledBlockSet(lesson.blockSetId);
 	      		  } else {
 	      			lesson.enabled = false;
 	      		  }
