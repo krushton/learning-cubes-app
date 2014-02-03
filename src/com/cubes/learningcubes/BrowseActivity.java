@@ -81,6 +81,9 @@ public class BrowseActivity extends Activity {
 				break;
 			case R.id.math:
 				q += "Math";
+				intent.putExtra("remoteCategoryId", 2);
+				intent.putExtra("categoryName", q);
+				startActivity(intent);
 				break;
 			case R.id.government:
 				q += "Civics";
@@ -90,6 +93,9 @@ public class BrowseActivity extends Activity {
 				break;
 			case R.id.science:
 				q += "Science";
+				intent.putExtra("remoteCategoryId", 4);
+				intent.putExtra("categoryName", q);
+				startActivity(intent);
 				break;
 			case R.id.music:
 				q += "Music";

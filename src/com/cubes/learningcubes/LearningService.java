@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Random;
@@ -192,27 +193,14 @@ public class LearningService extends Service implements TextToSpeech.OnInitListe
 	 
 	 private boolean isSimilarEnough(String testId, String correctId) {
 
-		 Log.d(TAG, "Testing similarity: " + testId + " " + correctId); 
-		 testId = testId.toLowerCase().trim();
-		 correctId = correctId.toLowerCase().trim();
-		 
-		 int commonChars = 0;
-		 for (int i = 0; i < testId.length(); i++) {
-			 if (correctId.contains(""+testId.charAt(i))) {
-				 commonChars++;
-			 }
-		 }
-		 /*
-		 float percent = (float)commonChars / (float)correctId.length();
-		 if (percent > .99) {
-			 return true;
-		 } 
-		 */
-		 Log.d(TAG, "common characters: " + commonChars);
-		 if (commonChars == testId.length()) {
-			 return true;
-		 }
-		 return false;
+
+    	 char[] first = testId.toLowerCase(Locale.getDefault()).trim().toCharArray();
+		 char[] second = correctId.toLowerCase(Locale.getDefault()).trim().toCharArray();
+		 Arrays.sort(first);
+		 Arrays.sort(second);
+		 return Arrays.equals(first, second);
+			
+	    
     }
 	 
 	 private void startGame() {

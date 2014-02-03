@@ -1,6 +1,7 @@
 package com.cubes.learningcubes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -843,25 +844,11 @@ public class CubesDbHelper extends SQLiteOpenHelper {
     
     private boolean isSimilarEnough(String testId, String correctId) {
 
-    	Log.d(TAG, "Testing similarity: " + testId + " " + correctId); 
-		 testId = testId.toLowerCase(Locale.ENGLISH).trim();
-		 correctId = correctId.toLowerCase(Locale.ENGLISH).trim();
-		 int commonChars = 0;
-		 for (int i = 0; i < testId.length(); i++) {
-			 if (correctId.contains(""+testId.charAt(i))) {
-				 commonChars++;
-			 }
-		 }
-		 Log.d(TAG, "common characters: " + commonChars);
-		 /*
-		 float percent = (float)commonChars / (float)correctId.length();
-		 if (percent > .99) {
-			 return true;
-		 } 
-		 */
-		 if (commonChars == testId.length()) {
-			 return true;
-		 }
-		 return false;
+    	 char[] first = testId.toLowerCase(Locale.getDefault()).trim().toCharArray();
+		 char[] second = correctId.toLowerCase(Locale.getDefault()).trim().toCharArray();
+		 Arrays.sort(first);
+		 Arrays.sort(second);
+		 return Arrays.equals(first, second);
+		
     }
 }
